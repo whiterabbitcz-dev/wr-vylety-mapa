@@ -7,7 +7,8 @@
     "km": 0,
     "popis": "Start výletu; z Prahy přímý vlak, nádraží kousek od centra.",
     "prohlidka_min": 0,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip1-melnik-zel-stanice-start"
   },
   {
     "trip": "trip1",
@@ -17,7 +18,9 @@
     "km": 2.3,
     "popis": "Vyhlídka pod mělnickým zámkem na soutok dvou největších českých řek.",
     "prohlidka_min": 15,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip1-soutok-labe-a-vltavy-vyhlidka",
+    "photo_spot": true
   },
   {
     "trip": "trip1",
@@ -27,7 +30,8 @@
     "km": 4.6,
     "popis": "Zámecký park v Hoříně, příjemný průjezd stinnou alejí.",
     "prohlidka_min": 0,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip1-horinsky-park"
   },
   {
     "trip": "trip1",
@@ -38,7 +42,9 @@
     "popis": "Secesní plavební zdymadlo z roku 1905 na vraňansko-hořínském kanálu; prohlídka po domluvě.",
     "prohlidka_min": 40,
     "cil": true,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip1-zdymadlo-horin-plavebni-komora",
+    "photo_spot": true
   },
   {
     "trip": "trip1",
@@ -48,7 +54,8 @@
     "km": 9,
     "popis": "Malý zoopark s domácími zvířaty, ideální zastávka pro menší děti.",
     "prohlidka_min": 45,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip1-zoopark-zelcin"
   },
   {
     "trip": "trip1",
@@ -58,7 +65,8 @@
     "km": 12.4,
     "popis": "Lávka přes Vltavu u Lužce, otočný bod okruhu.",
     "prohlidka_min": 0,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip1-luzec-nad-vltavou-lavka"
   },
   {
     "trip": "trip1",
@@ -69,7 +77,8 @@
     "popis": "Návrat okruhem zpět na nádraží; alternativně lze skončit v Dolních Beřkovicích či Horních Počaplech.",
     "prohlidka_min": 0,
     "coords_overit": false,
-    "zaver": true
+    "zaver": true,
+    "id": "trip1-melnik-zel-stanice-cil-okruhu"
   },
   {
     "trip": "trip2",
@@ -80,7 +89,8 @@
     "popis": "Start; v sezóně 2026 sem jezdí cyklovlak Kokořínský rychlík z Prahy (so/ne/svátky, Praha hl. n. 8:37, zpět z Mšena 16:44).",
     "prohlidka_min": 0,
     "coords_overit": false,
-    "km_plna": 0
+    "km_plna": 0,
+    "id": "trip2-mseno-zel-stanice-start"
   },
   {
     "trip": "trip2",
@@ -92,7 +102,9 @@
     "prohlidka_min": 30,
     "coords_overit": false,
     "varianta": "plna",
-    "km_plna": 6.1
+    "km_plna": 6.1,
+    "id": "trip2-poklicky",
+    "photo_spot": true
   },
   {
     "trip": "trip2",
@@ -104,7 +116,9 @@
     "prohlidka_min": 30,
     "coords_overit": false,
     "varianta": "plna",
-    "km_plna": 10.1
+    "km_plna": 10.1,
+    "id": "trip2-hrad-kokorin",
+    "photo_spot": true
   },
   {
     "trip": "trip2",
@@ -116,7 +130,9 @@
     "prohlidka_min": 75,
     "cil": true,
     "coords_overit": false,
-    "km_plna": 27.4
+    "km_plna": 27.4,
+    "id": "trip2-pivovar-lobec-parostrojni",
+    "photo_spot": true
   },
   {
     "trip": "trip2",
@@ -127,7 +143,8 @@
     "popis": "Malé muzeum autora Lovců mamutů, hned u pivovaru.",
     "prohlidka_min": 20,
     "coords_overit": false,
-    "km_plna": 27.3
+    "km_plna": 27.3,
+    "id": "trip2-muzeum-eduarda-storcha-lobec"
   },
   {
     "trip": "trip2",
@@ -139,7 +156,8 @@
     "prohlidka_min": 0,
     "coords_overit": false,
     "km_plna": 36.3,
-    "zaver": true
+    "zaver": true,
+    "id": "trip2-mseno-zel-stanice-cil"
   },
   {
     "trip": "trip3",
@@ -149,7 +167,8 @@
     "km": 0,
     "popis": "Start; ze Strančic krátký a častý vlak z Prahy.",
     "prohlidka_min": 0,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip3-strancice-zel-stanice-start"
   },
   {
     "trip": "trip3",
@@ -159,7 +178,8 @@
     "km": 3.1,
     "popis": "Městečko s náměstím a občerstvením před stoupáním do Hrusic.",
     "prohlidka_min": 15,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip3-mnichovice"
   },
   {
     "trip": "trip3",
@@ -169,7 +189,9 @@
     "km": 8.7,
     "popis": "Rodná ves Josefa Lady. POZOR: památník je od 1. 10. 2025 do odvolání uzavřen (rekonstrukce), před výletem ověřit znovuotevření. Ves s Ladovými motivy stojí za procházku i tak.",
     "prohlidka_min": 20,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip3-hrusice-pamatnik-josefa-lady",
+    "photo_spot": true
   },
   {
     "trip": "trip3",
@@ -180,7 +202,9 @@
     "popis": "Secesní observatoř s dvoumetrovým dalekohledem, největším v ČR; prohlídka ~2 h (2026: víkendy a svátky V–IX, začátky 10/13/16 h, platba jen hotově). Úsek z Hrusic stoupá.",
     "prohlidka_min": 120,
     "cil": true,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip3-hvezdarna-ondrejov",
+    "photo_spot": true
   },
   {
     "trip": "trip3",
@@ -190,6 +214,7 @@
     "km": 23.1,
     "popis": "Sjezd k vlaku v Senohrabech; alternativně lze dojet zpět do Mnichovic.",
     "prohlidka_min": 0,
-    "coords_overit": false
+    "coords_overit": false,
+    "id": "trip3-senohraby-zel-stanice-cil"
   }
 ]

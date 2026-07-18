@@ -8,7 +8,44 @@
       "popis": "Pohodová placka podél Vltavy a Labe k secesnímu plavebnímu zdymadlu z roku 1905. Bez stoupání, asfalt, ideální i s menšími dětmi.",
       "gpx": "data/trip1.gpx",
       "znacene_trasy": "Vltavská č. 7 + Labská č. 2 / EuroVelo 7",
-      "zkracena": "Jen Mělník → zdymadlo Hořín a zpět (cca 7 km): vyhlídka na soutok, park a plavební komora bez okruhu přes Lužec."
+      "zkracena": "Jen Mělník → zdymadlo Hořín a zpět (cca 7 km): vyhlídka na soutok, park a plavební komora bez okruhu přes Lužec.",
+      "mission_number": 1,
+      "mission_title": "Mise 1: Tajemství zdymadla",
+      "mission_subtitle": "Placeholder: podtitulek mise, dodá se s obsahem.",
+      "xp_value": 100,
+      "scavenger": [
+        {
+          "id": "s1",
+          "text": "Placeholder: vyfoť loď v plavební komoře",
+          "icon": "📷"
+        },
+        {
+          "id": "s2",
+          "text": "Placeholder: vyfoť soutok Labe a Vltavy",
+          "icon": "📷"
+        },
+        {
+          "id": "s3",
+          "text": "Placeholder: vyfoť zvíře v zooparku Zelčín",
+          "icon": "📷"
+        },
+        {
+          "id": "s4",
+          "text": "Placeholder: vyfoť lávku v Lužci zespodu",
+          "icon": "📷"
+        }
+      ],
+      "rabbit_hint": "Placeholder: vyfoť králíka u zdymadla (dodá se s obsahem).",
+      "facts": [
+        {
+          "stop_id": "trip1-zdymadlo-horin-plavebni-komora",
+          "fact": "Placeholder: víš, že… fakt o zdymadle Hořín."
+        },
+        {
+          "stop_id": "trip1-soutok-labe-a-vltavy-vyhlidka",
+          "fact": "Placeholder: víš, že… fakt o soutoku."
+        }
+      ]
     },
     {
       "id": "trip2",
@@ -24,7 +61,39 @@
         "info_alt": "Zobrazená je plná verze pro zdatné: navíc Kokořínský důl, Pokličky a hrad Kokořín. Hlídejte čas, zpáteční vlak jede v 16:44.",
         "prepnout": "Přepnout na plnou verzi pro zdatné (Kokořínský důl, Pokličky, hrad)",
         "prepnout_zpet": "Přepnout zpět na zkrácenou verzi (rodinný default)"
-      }
+      },
+      "mission_number": 2,
+      "mission_title": "Mise 2: Parostrojní výprava",
+      "mission_subtitle": "Placeholder: podtitulek mise, dodá se s obsahem.",
+      "xp_value": 150,
+      "scavenger": [
+        {
+          "id": "s1",
+          "text": "Placeholder: vyfoť komín parostrojního pivovaru",
+          "icon": "📷"
+        },
+        {
+          "id": "s2",
+          "text": "Placeholder: vyfoť vlak cyklovlaku",
+          "icon": "📷"
+        },
+        {
+          "id": "s3",
+          "text": "Placeholder: vyfoť skálu u trasy",
+          "icon": "📷"
+        }
+      ],
+      "rabbit_hint": "Placeholder: vyfoť králíka před pivovarem (dodá se s obsahem).",
+      "facts": [
+        {
+          "stop_id": "trip2-pivovar-lobec-parostrojni",
+          "fact": "Placeholder: víš, že… fakt o pivovaru Lobeč."
+        },
+        {
+          "stop_id": "trip2-hrad-kokorin",
+          "fact": "Placeholder: víš, že… fakt o hradu Kokořín."
+        }
+      ]
     },
     {
       "id": "trip3",
@@ -34,7 +103,39 @@
       "popis": "Secesní observatoř s největším dalekohledem v ČR, cestou přes Hrusice Josefa Lady. Kratší vlak, ale úsek na hvězdárnu stoupá. Prohlídky 2026: víkendy a svátky V–IX (10, 13 a 16 h, ~2 h, jen hotově). Ladův památník v Hrusicích je do odvolání zavřený (rekonstrukce).",
       "gpx": "data/trip3.gpx",
       "znacene_trasy": "Cyklotrasy 0020, 0023, 0025",
-      "zkracena": "Bez výjezdu na hvězdárnu: Strančice → Mnichovice → Hrusice (Ladova ves; památník do odvolání zavřen) → Senohraby, výrazně méně stoupání."
+      "zkracena": "Bez výjezdu na hvězdárnu: Strančice → Mnichovice → Hrusice (Ladova ves; památník do odvolání zavřen) → Senohraby, výrazně méně stoupání.",
+      "mission_number": 3,
+      "mission_title": "Mise 3: Cesta ke hvězdám",
+      "mission_subtitle": "Placeholder: podtitulek mise, dodá se s obsahem.",
+      "xp_value": 150,
+      "scavenger": [
+        {
+          "id": "s1",
+          "text": "Placeholder: vyfoť kopuli dalekohledu",
+          "icon": "📷"
+        },
+        {
+          "id": "s2",
+          "text": "Placeholder: vyfoť kocoura Mikeše v Hrusicích",
+          "icon": "📷"
+        },
+        {
+          "id": "s3",
+          "text": "Placeholder: vyfoť výhled ze stoupání",
+          "icon": "📷"
+        }
+      ],
+      "rabbit_hint": "Placeholder: vyfoť králíka u hvězdárny (dodá se s obsahem).",
+      "facts": [
+        {
+          "stop_id": "trip3-hvezdarna-ondrejov",
+          "fact": "Placeholder: víš, že… fakt o hvězdárně Ondřejov."
+        },
+        {
+          "stop_id": "trip3-hrusice-pamatnik-josefa-lady",
+          "fact": "Placeholder: víš, že… fakt o Josefu Ladovi."
+        }
+      ]
     }
   ]
 }

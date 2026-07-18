@@ -263,11 +263,120 @@
     tripLayers: L.layerGroup().addTo(map),
     kmMarkers: [],   // markery kilometrovníku (kvůli collision s piny)
     stopLatLngs: [], // pozice pinů zastávek (kvůli collision)
+    badges: [],      // definice odznaků (badges.json)
+    lastStats: {},   // {tripId: {km, gain}} — poslední spočtené hodnoty z GPX
+    navStops: [],    // zastávky aktivního výletu pro navigátor
   };
 
   // km pozice zastávky pro aktivní variantu (plná verze má vlastní km_plna)
   function stopKm(stop) {
     return state.variantAlt && stop.km_plna != null ? stop.km_plna : stop.km;
+  }
+
+  // ---------------------------------------------------------------- herní vrstva: postup
+  //
+  // Vše lokálně v localStorage (statický web, jeden telefon, self-reported).
+  // XP se NEukládá — počítá se vždy ze zaškrtnutých položek a hotových misí,
+  // takže import/úprava zálohy nikdy nerozbije součet.
+
+  var STORAGE_KEY = "wr-vylety-mapa.progress";
+  var SCHEMA_VERSION = 1;
+  var XP_SCAVENGER = 10; // za položku foto-hledačky
+  var XP_RABBIT = 25;    // za králíka
+
+  var progress = loadProgress();
+
+  function defaultProgress() {
+    return {
+      schema_version: SCHEMA_VERSION,
+      checks: {},   // {tripId: {itemId: true, rabbit: true}}
+      badges: {},   // {badgeId: true} — odemčené (auto i manuální)
+      missions: {}, // {tripId: {done: true, km, gain}} — snapshot pro auto odznaky
+      nav: {},      // {tripId: index další zastávky v navigátoru}
+    };
+  }
+
+  function loadProgress() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultProgress();
+      var p = JSON.parse(raw);
+      if (!p || p.schema_version !== SCHEMA_VERSION) return defaultProgress();
+      var d = defaultProgress();
+      Object.keys(d).forEach(function (k) { if (p[k] == null) p[k] = d[k]; });
+      return p;
+    } catch (e) {
+      return defaultProgress();
+    }
+  }
+
+  function saveProgress() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }
+    catch (e) { /* private mode apod. — hra jede, jen se neuloží */ }
+  }
+
+  function tripChecks(tripId) {
+    if (!progress.checks[tripId]) progress.checks[tripId] = {};
+    return progress.checks[tripId];
+  }
+
+  function computeXp() {
+    var xp = 0;
+    state.trips.forEach(function (trip) {
+      var checks = progress.checks[trip.id] || {};
+      (trip.scavenger || []).forEach(function (it) { if (checks[it.id]) xp += XP_SCAVENGER; });
+      if (checks.rabbit) xp += XP_RABBIT;
+      if (progress.missions[trip.id] && progress.missions[trip.id].done) xp += trip.xp_value || 0;
+    });
+    return xp;
+  }
+
+  function isMissionComplete(trip) {
+    var checks = progress.checks[trip.id] || {};
+    if (trip.rabbit_hint && !checks.rabbit) return false;
+    return (trip.scavenger || []).every(function (it) { return checks[it.id]; });
+  }
+
+  // Po každé změně: dokončení mise (se snapshotem km/převýšení pro auto
+  // odznaky), vyhodnocení odznaků, přerender XP. Odznak je ratchet — jednou
+  // odemčený už nezhasne, i kdyby se metrika snížila (import, odškrtnutí).
+  function afterProgressChange() {
+    state.trips.forEach(function (trip) {
+      var m = progress.missions[trip.id];
+      if (isMissionComplete(trip)) {
+        if (!m || !m.done) {
+          var stats = state.lastStats[trip.id] || { km: 0, gain: 0 };
+          progress.missions[trip.id] = { done: true, km: stats.km, gain: stats.gain };
+        }
+      } else if (m && m.done) {
+        delete progress.missions[trip.id]; // odškrtla položku → mise zas otevřená
+      }
+    });
+    evalAutoBadges();
+    saveProgress();
+    renderXp();
+  }
+
+  function metricValue(metric) {
+    var missions = Object.keys(progress.missions).filter(function (k) { return progress.missions[k].done; });
+    if (metric === "missions_done") return missions.length;
+    if (metric === "km_total") return missions.reduce(function (a, k) { return a + (progress.missions[k].km || 0); }, 0);
+    if (metric === "climb_total") return missions.reduce(function (a, k) { return a + (progress.missions[k].gain || 0); }, 0);
+    if (metric === "xp") return computeXp();
+    return 0;
+  }
+
+  function evalAutoBadges() {
+    (state.badges || []).forEach(function (b) {
+      if (b.condition.type !== "auto" || progress.badges[b.id]) return;
+      if (metricValue(b.condition.metric) >= b.condition.gte) progress.badges[b.id] = true;
+    });
+  }
+
+  function renderXp() {
+    var xp = computeXp();
+    el("xp-value").textContent = xp;
+    el("xp-hero-value").textContent = xp;
   }
 
   // Outline ikony (lucide), inline kvůli self-contained buildu bez CDN.
@@ -279,6 +388,8 @@
     mountain: iconSvg('<path d="m8 3 4 8 5-5 5 15H2L8 3z"/>'),
     clock: iconSvg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
     train: iconSvg('<rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="M8 15h.01"/><path d="M16 15h.01"/><path d="m6 19-2 3"/><path d="m18 19 2 3"/>'),
+    camera: iconSvg('<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>'),
+    info: iconSvg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'),
   };
 
   function isStation(stop) {
@@ -333,6 +444,9 @@
     if (stop.prohlidka_min) meta.push("prohlídka ~" + stop.prohlidka_min + " min");
     if (meta.length) html += '<p class="meta">' + meta.join(" · ") + "</p>";
     if (stop.popis) html += "<p>" + stop.popis + "</p>";
+    if (stop.photo_spot) html += '<p class="photo-spot">' + ICONS.camera + " Super místo na fotku</p>";
+    var fact = state.factsByStop && state.factsByStop[stop.id];
+    if (fact) html += '<p class="stop-fact">' + ICONS.info + " " + fact + "</p>";
     html += "</div>";
     m.bindPopup(html);
     return m;
@@ -352,9 +466,12 @@
       var visit = s.prohlidka_min
         ? ' <span class="visit">· prohlídka ~' + s.prohlidka_min + " min</span>"
         : "";
+      var spot = s.photo_spot ? ' <span class="photo-spot-badge" title="Super místo na fotku">' + ICONS.camera + "</span>" : "";
+      var fact = state.factsByStop && state.factsByStop[s.id];
+      var factHtml = fact ? '<div class="stop-fact">' + ICONS.info + " " + fact + "</div>" : "";
       li.innerHTML = pin +
         '<div class="stop-body"><div><span class="stop-name">' + s.name + "</span>" +
-        kmTxt + visit + "</div>" + (s.popis || "") + "</div>";
+        spot + kmTxt + visit + "</div>" + (s.popis || "") + factHtml + "</div>";
       ol.appendChild(li);
       if (segs && segs[i]) {
         var seg = document.createElement("li");
@@ -395,6 +512,60 @@
     });
   }
 
+  // ---------------------------------------------------------------- herní vrstva: UI
+
+  // Foto-hledačka + králík: odškrtávací seznam, žádný upload — fotka žije
+  // v roličce telefonu, tady jen „hotovo".
+  function renderScavenger(trip) {
+    var wrap = el("scavenger-wrap");
+    var ul = el("scavenger-list");
+    var items = trip.scavenger || [];
+    if (!items.length && !trip.rabbit_hint) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    ul.innerHTML = "";
+    var checks = tripChecks(trip.id);
+
+    function addItem(id, icon, text, xp, isRabbit) {
+      var li = document.createElement("li");
+      li.className = "scav-item" + (checks[id] ? " done" : "") + (isRabbit ? " rabbit" : "");
+      li.innerHTML =
+        '<button type="button" class="scav-check" aria-pressed="' + !!checks[id] + '">' +
+        '<span class="scav-icon">' + icon + "</span>" +
+        '<span class="scav-text">' + text + '<span class="scav-xp">+' + xp + " XP</span></span>" +
+        '<span class="scav-box">' + (checks[id] ? "✓" : "") + "</span></button>";
+      li.querySelector("button").addEventListener("click", function () {
+        if (checks[id]) delete checks[id];
+        else checks[id] = true;
+        afterProgressChange();
+        renderScavenger(trip);
+        renderMissionState(trip);
+      });
+      ul.appendChild(li);
+    }
+
+    if (trip.rabbit_hint) addItem("rabbit", "🐇", trip.rabbit_hint, XP_RABBIT, true);
+    items.forEach(function (it) { addItem(it.id, it.icon || "📷", it.text, XP_SCAVENGER, false); });
+  }
+
+  function renderMissionState(trip) {
+    var sub = el("mission-subtitle");
+    sub.hidden = !trip.mission_subtitle;
+    if (trip.mission_subtitle) sub.textContent = trip.mission_subtitle;
+
+    var box = el("mission-progress");
+    var total = (trip.scavenger || []).length + (trip.rabbit_hint ? 1 : 0);
+    if (!total) { box.hidden = true; return; }
+    var checks = progress.checks[trip.id] || {};
+    var done = (trip.scavenger || []).filter(function (it) { return checks[it.id]; }).length +
+      (checks.rabbit ? 1 : 0);
+    var complete = progress.missions[trip.id] && progress.missions[trip.id].done;
+    box.hidden = false;
+    box.className = complete ? "complete" : "";
+    box.innerHTML = complete
+      ? "Mise splněna ✓ bonus +" + (trip.xp_value || 0) + " XP"
+      : "Úkoly mise: " + done + " / " + total;
+  }
+
   function showTrip(trip) {
     if (state.current !== trip.id) state.variantAlt = false; // přepnutí výletu → default varianta
     state.current = trip.id;
@@ -405,7 +576,13 @@
       b.setAttribute("aria-selected", b.dataset.trip === trip.id ? "true" : "false");
     });
 
-    el("trip-title").textContent = trip.nazev;
+    // fakta k zastávkám téhle mise (na kartách, v popupech i v navigátoru)
+    state.factsByStop = {};
+    (trip.facts || []).forEach(function (f) { state.factsByStop[f.stop_id] = f.fact; });
+
+    el("trip-title").textContent = trip.mission_title || trip.nazev;
+    renderMissionState(trip);
+    renderScavenger(trip);
     el("trip-desc").textContent = trip.popis;
     el("routes-note").textContent = trip.znacene_trasy
       ? "Značené trasy: " + trip.znacene_trasy
@@ -440,6 +617,10 @@
       state.stopLatLngs.push(L.latLng(s.lat, s.lng));
     });
     renderStopsList(stops);
+
+    // navigátor pracuje se zastávkami aktivní varianty
+    state.navStops = stops;
+    el("nav-mode-btn").hidden = stops.length < 2;
 
     var visitsMin = stops.reduce(function (a, s) { return a + (s.prohlidka_min || 0); }, 0);
 
@@ -488,6 +669,8 @@
     var line = toLineString(pts);
     var km = turf.length(line, { units: "kilometers" });
     var gain = elevationGain(pts);
+    // snapshot pro auto odznaky (ukládá se při dokončení mise)
+    state.lastStats[trip.id] = { km: Math.round(km * 10) / 10, gain: gain || 0 };
 
     // Model času: tempo 11 km/h na rovině + ~1 min na každých 10 m převýšení.
     var rideMin = (km / RIDE_SPEED_KMH) * 60 + (gain != null ? (gain / 10) * CLIMB_MIN_PER_10M : 0);
@@ -664,15 +847,172 @@
     sheet.classList.add("open");
   });
 
+  // ------------------------------------------------ herní vrstva: modaly
+
+  document.querySelectorAll(".modal-close").forEach(function (btn) {
+    btn.addEventListener("click", function () { el(btn.dataset.close).hidden = true; });
+  });
+
+  el("xp-button").addEventListener("click", function () {
+    renderBadges();
+    renderXp();
+    el("badges-modal").hidden = false;
+  });
+
+  // Police odznaků: zamčené jsou vidět jako cíle, odemčené se rozsvítí.
+  // Manuální odznak = self-check ťuknutím (ratchet zpět ťuknutím znovu).
+  function renderBadges() {
+    var grid = el("badges-grid");
+    grid.innerHTML = "";
+    state.badges.forEach(function (b) {
+      var unlocked = !!progress.badges[b.id];
+      var tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "badge-tile" + (unlocked ? " unlocked" : "");
+      tile.innerHTML =
+        '<span class="badge-icon">' + b.icon + "</span>" +
+        '<span class="badge-name">' + b.name + "</span>" +
+        '<span class="badge-desc">' + b.description + "</span>" +
+        (b.condition.type === "manual" ? '<span class="badge-tap">' + (unlocked ? "splněno ✓" : "ťukni, až to splníš") + "</span>" : "");
+      if (b.condition.type === "manual") {
+        tile.addEventListener("click", function () {
+          if (progress.badges[b.id]) delete progress.badges[b.id];
+          else progress.badges[b.id] = true;
+          afterProgressChange();
+          renderBadges();
+        });
+      } else {
+        tile.disabled = true;
+      }
+      grid.appendChild(tile);
+    });
+  }
+
+  // Záloha / obnova: JSON přes textarea (na iOS spolehlivější než stahování
+  // souboru). Pojistka proti promazání localStorage.
+  el("export-btn").addEventListener("click", function () {
+    var data = JSON.stringify(progress);
+    el("backup-area").value = data;
+    var btn = el("export-btn");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(data).then(function () {
+        btn.textContent = "Zkopírováno ✓";
+        setTimeout(function () { btn.textContent = "Zkopírovat zálohu"; }, 1500);
+      });
+    }
+  });
+
+  el("import-btn").addEventListener("click", function () {
+    var btn = el("import-btn");
+    try {
+      var p = JSON.parse(el("backup-area").value);
+      if (!p || p.schema_version !== SCHEMA_VERSION) throw new Error("bad schema");
+      var d = defaultProgress();
+      Object.keys(d).forEach(function (k) { if (p[k] == null) p[k] = d[k]; });
+      progress = p;
+      afterProgressChange();
+      renderBadges();
+      refreshCurrentTrip();
+      btn.textContent = "Načteno ✓";
+    } catch (e) {
+      btn.textContent = "Tohle není platná záloha";
+    }
+    setTimeout(function () { btn.textContent = "Načíst zálohu"; }, 2000);
+  });
+
+  el("reset-btn").addEventListener("click", function () {
+    if (!window.confirm("Opravdu smazat celý postup? Odškrtnuté úkoly, XP i odznaky zmizí.")) return;
+    progress = defaultProgress();
+    saveProgress();
+    renderXp();
+    renderBadges();
+    refreshCurrentTrip();
+  });
+
+  function refreshCurrentTrip() {
+    if (!state.current) return;
+    var trip = state.trips.find(function (t) { return t.id === state.current; });
+    if (trip) { renderScavenger(trip); renderMissionState(trip); }
+  }
+
+  // ------------------------------------------------ herní vrstva: navigátor
+  //
+  // Zjednodušené velké zobrazení „kam teď" pro jeden telefon v ruce
+  // navigátorky. Bez GPS: krokuje se ručně („Jsme tady!"), šipka je azimut
+  // z předchozí zastávky (sever nahoře, jako mapa).
+
+  function bearingDeg(a, b) {
+    var rad = function (d) { return (d * Math.PI) / 180; };
+    var dLon = rad(b.lng - a.lng);
+    var y = Math.sin(dLon) * Math.cos(rad(b.lat));
+    var x = Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) -
+      Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  }
+
+  function navIndex() {
+    var max = state.navStops.length - 1;
+    var idx = progress.nav[state.current] != null ? progress.nav[state.current] : 1;
+    return Math.max(1, Math.min(idx, max));
+  }
+
+  function renderNavigator() {
+    var stops = state.navStops;
+    if (stops.length < 2) return;
+    var idx = navIndex();
+    var target = stops[idx];
+    var prev = stops[idx - 1];
+    el("nav-stop-name").textContent = target.name;
+    var ka = stopKm(prev), kb = stopKm(target);
+    el("nav-km").textContent =
+      ka != null && kb != null && kb > ka ? "za " + (kb - ka).toFixed(1) + " km" : "";
+    el("nav-arrow").style.transform =
+      "rotate(" + Math.round(bearingDeg({ lat: prev.lat, lng: prev.lng }, { lat: target.lat, lng: target.lng })) + "deg)";
+    el("nav-desc").textContent = target.popis || "";
+    var fact = state.factsByStop[target.id];
+    el("nav-fact").hidden = !fact;
+    if (fact) el("nav-fact").textContent = fact;
+    el("nav-prev").disabled = idx <= 1;
+    el("nav-next").textContent = idx >= stops.length - 1 ? "Cíl! Zavřít navigátor" : "Jsme tady!";
+  }
+
+  el("nav-mode-btn").addEventListener("click", function () {
+    renderNavigator();
+    el("nav-mode").hidden = false;
+  });
+
+  el("nav-next").addEventListener("click", function () {
+    var idx = navIndex();
+    if (idx >= state.navStops.length - 1) {
+      el("nav-mode").hidden = true;
+      progress.nav[state.current] = 1; // příště zas od začátku
+      saveProgress();
+      return;
+    }
+    progress.nav[state.current] = idx + 1;
+    saveProgress();
+    renderNavigator();
+  });
+
+  el("nav-prev").addEventListener("click", function () {
+    progress.nav[state.current] = Math.max(1, navIndex() - 1);
+    saveProgress();
+    renderNavigator();
+  });
+
   // ---------------------------------------------------------------- start
 
   Promise.all([
     fetch("data/trips.json").then(function (r) { return r.json(); }),
     fetch("data/stops.json").then(function (r) { return r.json(); }),
+    fetch("data/badges.json").then(function (r) { return r.json(); }),
   ])
     .then(function (res) {
       state.trips = res[0].trips;
       state.stops = res[1];
+      state.badges = res[2].badges || [];
+
+      renderXp();
 
       var tabs = el("tabs");
       state.trips.forEach(function (trip) {

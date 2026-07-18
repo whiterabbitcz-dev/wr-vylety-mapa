@@ -10,6 +10,7 @@
   <link rel="icon" href="favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
   <link rel="apple-touch-icon" href="assets/apple-icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="vendor/leaflet-elevation/dist/leaflet-elevation.min.css">
   <link rel="stylesheet" href="css/style.css">
@@ -21,6 +22,9 @@
       <span class="app-title">Cyklovýlety</span>
       <span class="tagline">Follow the White Rabbit…</span>
     </div>
+    <button id="xp-button" type="button" aria-label="Skóre a odznaky">
+      <span id="xp-value">0</span> XP
+    </button>
   </header>
 
   <nav id="tabs" role="tablist" aria-label="Výběr výletu"></nav>
@@ -37,7 +41,10 @@
           <h1 id="trip-title"></h1>
           <span id="difficulty-badge" hidden></span>
         </div>
+        <p id="mission-subtitle" hidden></p>
+        <div id="mission-progress" hidden></div>
         <div id="stats" class="stats-row"></div>
+        <button id="nav-mode-btn" type="button" hidden>Navigátor: dej telefon navigátorce</button>
         <div id="variant-note" hidden></div>
         <div id="gpx-missing" class="note card-note" hidden>
           Trasa zatím není vygenerovaná, GPX vznikne build skriptem
@@ -50,12 +57,56 @@
         </div>
         <p id="trip-desc"></p>
         <div id="shortened" class="note card-note" hidden></div>
+        <div id="scavenger-wrap" hidden>
+          <div class="micro-label">Foto-hledačka</div>
+          <ul id="scavenger-list"></ul>
+        </div>
         <div class="micro-label">Zastávky</div>
         <ol id="stops-list"></ol>
         <p id="routes-note" class="note"></p>
       </div>
     </section>
   </main>
+
+  <!-- Odznaky, skóre, záloha a nastavení -->
+  <div id="badges-modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Skóre a odznaky</h2>
+        <button type="button" class="modal-close" data-close="badges-modal" aria-label="Zavřít">✕</button>
+      </div>
+      <div class="xp-hero"><span id="xp-hero-value">0</span><span class="xp-unit">XP</span></div>
+      <div class="micro-label">Police odznaků</div>
+      <div id="badges-grid"></div>
+      <div class="micro-label">Záloha postupu</div>
+      <p class="note">Postup žije jen v tomhle telefonu. Záloha se hodí, kdyby prohlížeč
+        úložiště promazal. Nejjistější je přidat si appku na plochu
+        (Sdílet → Přidat na plochu obrazovku).</p>
+      <div class="backup-row">
+        <button id="export-btn" type="button" class="ghost-btn">Zkopírovat zálohu</button>
+        <button id="import-btn" type="button" class="ghost-btn">Načíst zálohu</button>
+      </div>
+      <textarea id="backup-area" rows="3" placeholder="Sem vlož zálohu (JSON) a dej Načíst zálohu."></textarea>
+      <div class="micro-label">Nastavení</div>
+      <button id="reset-btn" type="button" class="danger-btn">Smazat celý postup</button>
+    </div>
+  </div>
+
+  <!-- Navigátor: velké zjednodušené zobrazení pro jednoho navigátora -->
+  <div id="nav-mode" class="modal" hidden>
+    <div class="nav-card">
+      <button type="button" class="modal-close" data-close="nav-mode" aria-label="Zavřít navigátor">✕</button>
+      <div class="micro-label">Další zastávka</div>
+      <div id="nav-stop-name">…</div>
+      <div id="nav-distance"><span id="nav-arrow">↑</span><span id="nav-km">…</span></div>
+      <p id="nav-desc"></p>
+      <p id="nav-fact" class="nav-fact" hidden></p>
+      <div class="nav-buttons">
+        <button id="nav-prev" type="button" class="ghost-btn">Zpět</button>
+        <button id="nav-next" type="button">Jsme tady!</button>
+      </div>
+    </div>
+  </div>
 
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="vendor/turf/turf.min.js"></script>

@@ -1,0 +1,77 @@
+{
+  "badges": [
+    {
+      "id": "prvni-mise",
+      "name": "První mise",
+      "description": "Placeholder: dokonči první misi.",
+      "icon": "🥇",
+      "condition": {
+        "type": "auto",
+        "metric": "missions_done",
+        "gte": 1
+      }
+    },
+    {
+      "id": "sberatelka-misi",
+      "name": "Sběratelka misí",
+      "description": "Placeholder: dokonči všechny 3 mise.",
+      "icon": "🏆",
+      "condition": {
+        "type": "auto",
+        "metric": "missions_done",
+        "gte": 3
+      }
+    },
+    {
+      "id": "horska-koza",
+      "name": "Horská koza",
+      "description": "Placeholder: nastoupej celkem 500 m.",
+      "icon": "⛰️",
+      "condition": {
+        "type": "auto",
+        "metric": "climb_total",
+        "gte": 500
+      }
+    },
+    {
+      "id": "stovka-v-nohach",
+      "name": "Stovka v nohách",
+      "description": "Placeholder: najeď celkem 50 km.",
+      "icon": "🚴",
+      "condition": {
+        "type": "auto",
+        "metric": "km_total",
+        "gte": 50
+      }
+    },
+    {
+      "id": "lovkyne-xp",
+      "name": "Lovkyně XP",
+      "description": "Placeholder: nasbírej 300 XP.",
+      "icon": "⚡",
+      "condition": {
+        "type": "auto",
+        "metric": "xp",
+        "gte": 300
+      }
+    },
+    {
+      "id": "destiva-jizda",
+      "name": "Deštivá jízda",
+      "description": "Placeholder: jela jsi kus trasy v dešti (odškrtni sama).",
+      "icon": "🌧️",
+      "condition": {
+        "type": "manual"
+      }
+    },
+    {
+      "id": "zmrzlina-na-trase",
+      "name": "Zmrzlinová pauza",
+      "description": "Placeholder: dala sis na trase zmrzlinu (odškrtni sama).",
+      "icon": "🍦",
+      "condition": {
+        "type": "manual"
+      }
+    }
+  ]
+}
