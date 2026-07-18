@@ -14,7 +14,7 @@
   --font: "Century Gothic", "URW Gothic", "Avantgarde", "Trebuchet MS", system-ui, sans-serif;
   --radius-card: 14px;
   --radius-ctl: 8px;
-  --sheet-peek: 208px;
+  --sheet-peek: 236px;
 }
 
 * { box-sizing: border-box; }
@@ -45,7 +45,7 @@ body {
   background: var(--bg);
 }
 
-.wr-mark { height: 26px; width: auto; display: block; }
+.wr-mark { height: 26px; width: auto; display: block; flex: 0 0 auto; }
 
 .head-text { display: flex; flex-direction: column; min-width: 0; }
 
@@ -75,13 +75,19 @@ body {
 #tabs button {
   flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
   border: none;
   background: none;
   font-family: inherit;
   font-size: 12.5px;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--text-soft);
-  padding: 7px 4px;
+  padding: 6px 4px;
   border-radius: var(--radius-ctl);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
@@ -157,11 +163,11 @@ main {
 
 #sheet-handle span {
   display: block;
-  width: 40px;
-  height: 4px;
+  width: 44px;
+  height: 5px;
   margin: 0 auto;
-  border-radius: 2px;
-  background: var(--border);
+  border-radius: 3px;
+  background: #555555; /* viditelná afordance vytažení */
 }
 
 #sheet-content {
@@ -461,6 +467,28 @@ main {
 
 #stops-list .visit { color: var(--text-muted); }
 
+/* úsek mezi zastávkami (à la Mapy.com „3.1 km · 12 min") */
+#stops-list .seg-row {
+  background: none;
+  border-radius: 0;
+  padding: 2px 0 2px 32px;
+  margin: -4px 0;
+  position: relative;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+#stops-list .seg-row::before {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+}
+
 /* ---- Mapové prvky ---- */
 .stop-popup h3 { margin: 0 0 4px; font-size: 14px; }
 .stop-popup p { margin: 2px 0; font-size: 12.5px; }
@@ -516,21 +544,85 @@ main {
   stroke: #FFFFFF;
 }
 
-/* kilometrovník */
+/* kilometrovník: menší a plošší než piny zastávek, ať se neperou */
 .km-marker {
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(0, 0, 0, 0.72);
   color: var(--accent);
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-align: center;
-  line-height: 18px;
+  line-height: 16px;
   border: none;
   box-shadow: none;
 }
 
-/* Leaflet ovládání na světlé mapě necháváme defaultní (čitelnost),
-   jen zoom bez zaoblení mimo grid */
-.leaflet-control-zoom a { border-radius: 0; }
+/* zoom v WR chromu místo bílého system defaultu */
+.leaflet-bar { border: 1px solid var(--border) !important; box-shadow: none; }
 
-.mapy-logo img { height: 18px; }
+.leaflet-control-zoom a {
+  background: var(--bg-card);
+  color: var(--text-soft);
+  border-radius: 0;
+  border-bottom-color: var(--border) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.leaflet-control-zoom a:first-child { border-radius: 8px 8px 0 0; }
+.leaflet-control-zoom a:last-child { border-radius: 0 0 8px 8px; }
+
+/* atribuce: jeden kompaktní tlumený blok (logo + copyright) */
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.72) !important;
+  font-size: 9.5px;
+  color: #666666;
+  padding: 2px 7px;
+  border-radius: 8px 0 0 0;
+  font-family: var(--font);
+}
+
+.leaflet-control-attribution a { color: #555555; }
+
+.mapy-attrib-logo img {
+  height: 11px;
+  vertical-align: -1px;
+  margin-right: 2px;
+}
+
+/* ------------------------------------------------ desktop >= 900 px:
+   mapa full-bleed + plovoucí WR boční panel (à la Mapy.com plánovač) */
+@media (min-width: 900px) {
+  #map { inset: 0; }
+
+  #sheet {
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    left: auto;
+    width: 400px;
+    height: auto;
+    transform: none;
+    transition: none;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+
+  #sheet-handle { display: none; }
+
+  #sheet-content { overflow-y: auto; }
+
+  /* taby jsou na desktopu reparentované do panelu (viz app.js applyLayout) */
+  #sheet > #tabs {
+    flex: 0 0 auto;
+    margin: 12px 12px 4px;
+  }
+
+  #sheet-content { padding: 0 16px 16px; }
+
+  /* headeru stačí menší dominance, mapa je hlavní */
+  #app-header { padding: 12px 20px 10px; }
+}

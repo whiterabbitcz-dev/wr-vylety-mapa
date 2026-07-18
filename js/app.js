@@ -37,41 +37,25 @@
 
   var map = L.map("map", { zoomControl: true, preferCanvas: false })
     .setView([50.15, 14.65], 10);
+  window.__map = map; // debug hook (harness/testy)
 
   // Flex/dvh layout (safe-area na iOS) se může dopočítat až po initu mapy —
   // dlaždice by se pak kreslily jen v pásu původní velikosti kontejneru.
   // Leaflet sleduje jen window resize, ne velikost kontejneru; ResizeObserver
   // pokryje každou změnu (dopočet flexu, rotace, schování lišty Safari).
   if (typeof ResizeObserver !== "undefined") {
-    new ResizeObserver(function () { map.invalidateSize(); })
-      .observe(document.getElementById("map"));
+    new ResizeObserver(function () {
+      map.invalidateSize();
+      checkLayout(); // breakpoint hlídáme i tady — resize/matchMedia eventy
+                     // jsou v některých webview nespolehlivé
+    }).observe(document.getElementById("map"));
   } else {
     window.addEventListener("load", function () { map.invalidateSize(); });
   }
 
-  var mapyLogoControl = null;
-
-  function addMapyLogo() {
-    var LogoControl = L.Control.extend({
-      options: { position: "bottomleft" },
-      onAdd: function () {
-        var container = L.DomUtil.create("div", "mapy-logo");
-        var link = L.DomUtil.create("a", "", container);
-        link.setAttribute("href", "http://mapy.com/");
-        link.setAttribute("target", "_blank");
-        link.setAttribute("rel", "noopener");
-        link.innerHTML = '<img src="https://api.mapy.com/img/api/logo.svg" alt="Mapy.com">';
-        L.DomEvent.disableClickPropagation(link);
-        return container;
-      },
-    });
-    mapyLogoControl = new LogoControl();
-    map.addControl(mapyLogoControl);
-  }
-
-  function removeMapyLogo() {
-    if (mapyLogoControl) { map.removeControl(mapyLogoControl); mapyLogoControl = null; }
-  }
+  // Atribuce: jeden kompaktní blok v rohu — logo Mapy.com (povinné) je inline
+  // součástí attribution controlu, žádný samostatný logo control.
+  map.attributionControl.setPrefix(false);
 
   // Řetěz podkladů: Mapy.com outdoor → CyclOSM → OSM. Když vrstva nevydá ani
   // jednu dlaždici a nasype chyby, přepneme na další v řadě.
@@ -79,18 +63,18 @@
     MAPY_KEY && {
       name: "mapy",
       make: function () {
-        addMapyLogo();
         return L.tileLayer(
           "https://api.mapy.com/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=" + MAPY_KEY,
           {
             minZoom: 0,
             maxZoom: 19,
             attribution:
+              '<a href="https://mapy.com/" target="_blank" rel="noopener" class="mapy-attrib-logo">' +
+              '<img src="https://api.mapy.com/img/api/logo.svg" alt="Mapy.com"></a> ' +
               '<a href="https://api.mapy.com/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>',
           }
         );
       },
-      cleanup: removeMapyLogo,
       // Mapy.com při neplatném klíči / vyčerpaném limitu vrací 403, ale tělem
       // je dekódovatelný PNG — <img> ho „načte" a tileerror nikdy nenastane.
       // Status proto ověříme fetchem; chybová odpověď navíc nemá CORS
@@ -175,6 +159,29 @@
 
   function el(id) { return document.getElementById(id); }
 
+  // Vzdálenost dvou bodů [lat, lng] v km (haversine).
+  function haversineKm(a, b) {
+    var rad = function (d) { return (d * Math.PI) / 180; };
+    var dLat = rad(b[0] - a[0]);
+    var dLon = rad(b[1] - a[1]);
+    var x =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * 6371 * Math.asin(Math.sqrt(x));
+  }
+
+  // Klouzavý průměr výšek (okno 5) — stejné vyhlazení pro celkové převýšení
+  // i úsekové časy mezi zastávkami.
+  function smoothEles(eles) {
+    var W = 2;
+    return eles.map(function (_, i) {
+      var a = Math.max(0, i - W), b = Math.min(eles.length - 1, i + W);
+      var s = 0;
+      for (var j = a; j <= b; j++) s += eles[j];
+      return s / (b - a + 1);
+    });
+  }
+
   // GPX → pole [ [lat, lng, ele], ... ] (vlastní parser, ať statistiky
   // nezávisí na interních strukturách pluginu)
   function parseGpx(xmlText) {
@@ -200,19 +207,48 @@
   function elevationGain(pts) {
     var eles = pts.map(function (p) { return p[2]; });
     if (eles.some(function (e) { return e == null || !isFinite(e); })) return null;
-    var W = 2; // půl-okno
-    var smooth = eles.map(function (_, i) {
-      var a = Math.max(0, i - W), b = Math.min(eles.length - 1, i + W);
-      var s = 0;
-      for (var j = a; j <= b; j++) s += eles[j];
-      return s / (b - a + 1);
-    });
+    var smooth = smoothEles(eles);
     var gain = 0;
     for (var i = 1; i < smooth.length; i++) {
       var d = smooth[i] - smooth[i - 1];
       if (d > 0) gain += d;
     }
     return Math.round(gain);
+  }
+
+  // Úseky mezi zastávkami (à la Mapy.com „3.1 km · 12 min"): z GPX kumulativní
+  // vzdálenost + převýšení v úseku, čas stejným modelem jako celek.
+  function buildSegments(pts, stops) {
+    var cum = [0];
+    for (var i = 1; i < pts.length; i++) {
+      cum.push(cum[i - 1] + haversineKm([pts[i - 1][0], pts[i - 1][1]], [pts[i][0], pts[i][1]]));
+    }
+    var eles = pts.map(function (p) { return p[2]; });
+    var hasEle = !eles.some(function (e) { return e == null || !isFinite(e); });
+    var smooth = hasEle ? smoothEles(eles) : null;
+
+    function idxAtKm(km) {
+      for (var i = 0; i < cum.length; i++) if (cum[i] >= km) return i;
+      return cum.length - 1;
+    }
+
+    var segs = [];
+    for (var s = 0; s < stops.length - 1; s++) {
+      var kmA = stopKm(stops[s]), kmB = stopKm(stops[s + 1]);
+      if (kmA == null || kmB == null || kmB <= kmA) { segs.push(null); continue; }
+      var segKm = kmB - kmA;
+      var min = (segKm / RIDE_SPEED_KMH) * 60;
+      if (smooth) {
+        var gain = 0;
+        for (var j = idxAtKm(kmA) + 1; j <= idxAtKm(kmB); j++) {
+          var d = smooth[j] - smooth[j - 1];
+          if (d > 0) gain += d;
+        }
+        min += (gain / 10) * CLIMB_MIN_PER_10M;
+      }
+      segs.push(segKm.toFixed(1) + " km · " + fmtTime(min));
+    }
+    return segs;
   }
 
   // ---------------------------------------------------------------- stav výletu
@@ -225,6 +261,8 @@
     eleControl: null,
     eleLayer: null,
     tripLayers: L.layerGroup().addTo(map),
+    kmMarkers: [],   // markery kilometrovníku (kvůli collision s piny)
+    stopLatLngs: [], // pozice pinů zastávek (kvůli collision)
   };
 
   // km pozice zastávky pro aktivní variantu (plná verze má vlastní km_plna)
@@ -249,10 +287,33 @@
 
   function clearTrip() {
     state.tripLayers.clearLayers();
+    state.kmMarkers = [];
+    state.stopLatLngs = [];
     if (state.eleLayer) { map.removeLayer(state.eleLayer); state.eleLayer = null; }
     if (state.eleControl) { state.eleControl.remove(); state.eleControl = null; }
     el("elevation").innerHTML = "";
   }
+
+  // Kilometrovník nekreslit, když by badge kolidoval s pinem zastávky nebo
+  // s už vykresleným km badgem (< 24 px; u okruhů se tam-a-zpět badge kryjí).
+  // Přepočítává se při zoomu/posunu.
+  function updateKmCollisions() {
+    if (!state.kmMarkers.length) return;
+    var kept = state.stopLatLngs.map(function (ll) {
+      return map.latLngToContainerPoint(ll);
+    });
+    state.kmMarkers.forEach(function (m) {
+      var elm = m.getElement();
+      if (!elm) return;
+      var p = map.latLngToContainerPoint(m.getLatLng());
+      var collides = kept.some(function (kp) {
+        return p.distanceTo(kp) < 24;
+      });
+      elm.style.visibility = collides ? "hidden" : "visible";
+      if (!collides) kept.push(p);
+    });
+  }
+  map.on("zoomend moveend", updateKmCollisions);
 
   // Piny: nádraží (start/cíl) = tmavý pin s vlakem, mezizastávky = žlutý pin
   // s pořadovým číslem (_pin přiřazeno v showTrip podle pořadí na trase).
@@ -277,10 +338,12 @@
     return m;
   }
 
-  function renderStopsList(stops) {
+  // segs (volitelné): úsekové vzdálenosti mezi zastávkami, segs[i] = úsek
+  // mezi stops[i] a stops[i+1]; null = neukazovat (např. bez GPX).
+  function renderStopsList(stops, segs) {
     var ol = el("stops-list");
     ol.innerHTML = "";
-    stops.forEach(function (s) {
+    stops.forEach(function (s, i) {
       var li = document.createElement("li");
       var pin = s._pin === "train"
         ? '<span class="stop-pin train">' + ICONS.train + "</span>"
@@ -293,6 +356,12 @@
         '<div class="stop-body"><div><span class="stop-name">' + s.name + "</span>" +
         kmTxt + visit + "</div>" + (s.popis || "") + "</div>";
       ol.appendChild(li);
+      if (segs && segs[i]) {
+        var seg = document.createElement("li");
+        seg.className = "seg-row";
+        seg.innerHTML = "<span>" + segs[i] + "</span>";
+        ol.appendChild(seg);
+      }
     });
   }
 
@@ -366,7 +435,10 @@
       s._pin = isStation(s) ? "train" : String(++pinNo);
     });
 
-    stops.forEach(function (s) { state.tripLayers.addLayer(stopMarker(s)); });
+    stops.forEach(function (s) {
+      state.tripLayers.addLayer(stopMarker(s));
+      state.stopLatLngs.push(L.latLng(s.lat, s.lng));
+    });
     renderStopsList(stops);
 
     var visitsMin = stops.reduce(function (a, s) { return a + (s.prohlidka_min || 0); }, 0);
@@ -382,6 +454,16 @@
       .catch(function () { renderNoRoute(trip, stops, visitsMin); });
   }
 
+  // fitBounds padding: na desktopu route nesmí zajet pod plovoucí panel
+  // vpravo. animate: false — při přepnutí výletu chceme rovnou cílový výřez
+  // (a animovaný zoom se v některých webview nedokončí spolehlivě).
+  function fitOptions() {
+    if (desktopMq.matches) {
+      return { paddingTopLeft: [40, 40], paddingBottomRight: [456, 40], animate: false };
+    }
+    return { padding: [30, 30], animate: false };
+  }
+
   function renderNoRoute(trip, stops, visitsMin) {
     el("gpx-missing").hidden = false;
     el("elevation-empty").hidden = false;
@@ -394,7 +476,7 @@
     if (stops.length) {
       map.fitBounds(
         L.latLngBounds(stops.map(function (s) { return [s.lat, s.lng]; })),
-        { padding: [30, 30] }
+        fitOptions()
       );
     }
   }
@@ -442,9 +524,9 @@
       { icon: ICONS.mountain, label: "Převýšení", value: gain != null ? gain + " m" : "…" },
       {
         icon: ICONS.clock,
-        label: "S prohlídkou",
-        value: fmtTime(totalMin),
-        sub: "jízda " + fmtTime(rideMin) + " (" + RIDE_SPEED_KMH + " km/h + kopce)",
+        label: "Čistá jízda",
+        value: fmtTime(rideMin),
+        sub: "+ prohlídky, celkem " + fmtTime(totalMin),
       },
     ]);
 
@@ -452,18 +534,21 @@
     for (var d = KM_MARKER_STEP; d < km; d += KM_MARKER_STEP) {
       var p = turf.along(line, d, { units: "kilometers" });
       var c = p.geometry.coordinates;
-      state.tripLayers.addLayer(
-        L.marker([c[1], c[0]], {
-          interactive: false,
-          icon: L.divIcon({
-            className: "km-marker",
-            html: String(d),
-            iconSize: [24, 18],
-            iconAnchor: [12, 9],
-          }),
-        })
-      );
+      var kmMarker = L.marker([c[1], c[0]], {
+        interactive: false,
+        icon: L.divIcon({
+          className: "km-marker",
+          html: String(d),
+          iconSize: [22, 16],
+          iconAnchor: [11, 8],
+        }),
+      });
+      state.tripLayers.addLayer(kmMarker);
+      state.kmMarkers.push(kmMarker);
     }
+
+    // úsekové vzdálenosti mezi zastávkami → seznam znovu i s mezikusy
+    renderStopsList(stops, buildSegments(pts, stops));
 
     // Výškový profil — leaflet-elevation vykreslí trasu i graf;
     // tap/hover na profilu ukáže odpovídající bod na mapě.
@@ -501,16 +586,60 @@
 
     map.fitBounds(
       L.latLngBounds(pts.map(function (p) { return [p[0], p[1]]; })),
-      { padding: [25, 25] }
+      fitOptions()
     );
+    setTimeout(updateKmCollisions, 300);
   }
 
-  // ---------------------------------------------------------------- bottom sheet
+  // ------------------------------------------------ layout: sheet vs. panel
 
-  // Dvě snap pozice: peek (handle + titul + staty) a plná. Tap na handle
-  // přepíná, svislý swipe na handle taky (threshold 24 px).
+  // Jeden kód, dva režimy: < 900 px mobilní bottom sheet, >= 900 px mapa
+  // full-bleed + plovoucí boční panel. Taby žijí na mobilu pod headerem,
+  // na desktopu nahoře v panelu (à la přepínač dopravy na Mapy.com).
+  var desktopMq = window.matchMedia("(min-width: 900px)");
   var sheet = el("sheet");
   var sheetHandle = el("sheet-handle");
+  var sheetContent = el("sheet-content");
+
+  function applyLayout() {
+    var tabs = el("tabs");
+    if (desktopMq.matches) {
+      sheet.classList.remove("open");
+      if (tabs.parentNode !== sheet) sheet.insertBefore(tabs, sheetContent);
+    } else {
+      var main = document.querySelector("main");
+      if (tabs.parentNode === sheet) document.body.insertBefore(tabs, main);
+    }
+    // po přechodu přes breakpoint překreslit výlet (fitBounds s novým
+    // paddingem — jinak trasa zůstane pod panelem / mimo výřez).
+    // invalidateSize těsně před fitem: RO/resize eventy můžou laggovat
+    // a fitBounds by počítal se starou velikostí mapy.
+    if (state.current) {
+      var trip = state.trips.find(function (t) { return t.id === state.current; });
+      if (trip) {
+        setTimeout(function () {
+          map.invalidateSize();
+          showTrip(trip);
+        }, 60);
+      }
+    }
+  }
+  // matchMedia change event je v některých webview nespolehlivý —
+  // hlídáme breakpoint i přes window resize.
+  var lastDesktop = null;
+  function checkLayout() {
+    if (desktopMq.matches !== lastDesktop) {
+      lastDesktop = desktopMq.matches;
+      applyLayout();
+    }
+  }
+  desktopMq.addEventListener("change", checkLayout);
+  window.addEventListener("resize", checkLayout);
+  setInterval(checkLayout, 500); // pojistka: v některých webview eventy laggují
+  checkLayout();
+
+  // Mobil: dvě snap pozice (peek / plná). Tap na handle přepíná, svislý swipe
+  // na handle taky (threshold 24 px); tap do obsahu v peek stavu sheet otevře.
   var touchStartY = null;
   var swiped = false;
 
@@ -528,6 +657,12 @@
     else if (dy > 24) { sheet.classList.remove("open"); touchStartY = null; swiped = true; }
   }, { passive: true });
   sheetHandle.addEventListener("touchend", function () { touchStartY = null; }, { passive: true });
+
+  sheetContent.addEventListener("click", function (e) {
+    if (desktopMq.matches || sheet.classList.contains("open")) return;
+    if (e.target.closest("button, a")) return; // tlačítka fungují normálně
+    sheet.classList.add("open");
+  });
 
   // ---------------------------------------------------------------- start
 
