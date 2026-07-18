@@ -1,0 +1,40 @@
+{
+  "trips": [
+    {
+      "id": "trip1",
+      "tab": "Zdymadlo Hořín",
+      "tab_sub": "Polabí · rovina",
+      "nazev": "Výlet 1: Zdymadlo Hořín",
+      "popis": "Pohodová placka podél Vltavy a Labe k secesnímu plavebnímu zdymadlu z roku 1905. Bez stoupání, asfalt, ideální i s menšími dětmi.",
+      "gpx": "data/trip1.gpx",
+      "znacene_trasy": "Vltavská č. 7 + Labská č. 2 / EuroVelo 7",
+      "zkracena": "Jen Mělník → zdymadlo Hořín a zpět (cca 7 km): vyhlídka na soutok, park a plavební komora bez okruhu přes Lužec."
+    },
+    {
+      "id": "trip2",
+      "tab": "Pivovar Lobeč",
+      "tab_sub": "Kokořínsko · kopce",
+      "nazev": "Výlet 2: Parostrojní pivovar Lobeč",
+      "popis": "Parostrojní pivovar, technická památka s pětisetletou tradicí, dnes funkční pivovar s restaurací (prohlídky 2026: čvc až srp pá/so/ne ve 14:30, nová expozice parostrojní technologie). Celý den stojí na cyklovlaku: zpáteční spoj jede z Mšena v 16:44, prohlídka ve 14:30 tedy vychází akorát. Proto je defaultně zobrazená zkrácená trasa Mšeno, Lobeč a zpět.",
+      "gpx": "data/trip2.gpx",
+      "znacene_trasy": "Cyklotrasa 0008 (Kokořínský důl, na plné verzi). Cyklovlak Kokořínský rychlík 2026: so/ne/svátky 21. 3.–1. 11., Praha hl. n. 8:37 → Mšeno, zpět z Mšena 16:44 (kapacita ~20 kol)",
+      "varianta_alt": {
+        "gpx": "data/trip2_plna.gpx",
+        "info": "Zobrazená je zkrácená verze: Mšeno → Lobeč a zpět, mírnější profil, vychází na vlak v 16:44.",
+        "info_alt": "Zobrazená je plná verze pro zdatné: navíc Kokořínský důl, Pokličky a hrad Kokořín. Hlídejte čas, zpáteční vlak jede v 16:44.",
+        "prepnout": "Přepnout na plnou verzi pro zdatné (Kokořínský důl, Pokličky, hrad)",
+        "prepnout_zpet": "Přepnout zpět na zkrácenou verzi (rodinný default)"
+      }
+    },
+    {
+      "id": "trip3",
+      "tab": "Hvězdárna Ondřejov",
+      "tab_sub": "Ladův kraj · stoupání",
+      "nazev": "Výlet 3: Hvězdárna Ondřejov",
+      "popis": "Secesní observatoř s největším dalekohledem v ČR, cestou přes Hrusice Josefa Lady. Kratší vlak, ale úsek na hvězdárnu stoupá. Prohlídky 2026: víkendy a svátky V–IX (10, 13 a 16 h, ~2 h, jen hotově). Ladův památník v Hrusicích je do odvolání zavřený (rekonstrukce).",
+      "gpx": "data/trip3.gpx",
+      "znacene_trasy": "Cyklotrasy 0020, 0023, 0025",
+      "zkracena": "Bez výjezdu na hvězdárnu: Strančice → Mnichovice → Hrusice (Ladova ves; památník do odvolání zavřen) → Senohraby, výrazně méně stoupání."
+    }
+  ]
+}

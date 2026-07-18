@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Cyklovýlety: technické památky z Prahy</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="vendor/leaflet-elevation/dist/leaflet-elevation.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="tabs" role="tablist" aria-label="Výběr výletu"></header>
+
+  <main>
+    <div id="map"></div>
+    <div id="elevation-wrap">
+      <div id="elevation"></div>
+      <div id="elevation-empty" hidden>Výškový profil se zobrazí, až bude vygenerovaná trasa (GPX).</div>
+    </div>
+    <section id="info" aria-live="polite">
+      <div id="info-head">
+        <h1 id="trip-title"></h1>
+        <span id="difficulty-badge" hidden></span>
+      </div>
+      <div id="stats" class="stats-grid"></div>
+      <p id="trip-desc"></p>
+      <div id="variant-note" class="note" hidden></div>
+      <div id="shortened" class="note" hidden></div>
+      <div id="gpx-missing" class="note warn" hidden>
+        Trasa zatím není vygenerovaná, GPX vznikne build skriptem
+        (<code>scripts/build_routes.mjs</code>, potřebuje ORS klíč). Zobrazuji jen zastávky.
+      </div>
+      <details id="stops-details">
+        <summary>Zastávky</summary>
+        <ol id="stops-list"></ol>
+      </details>
+      <p id="routes-note" class="note"></p>
+    </section>
+  </main>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/turf/turf.min.js"></script>
+  <script src="vendor/leaflet-elevation/dist/leaflet-elevation.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

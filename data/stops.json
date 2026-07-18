@@ -1,0 +1,195 @@
+[
+  {
+    "trip": "trip1",
+    "name": "Mělník, žel. stanice (start)",
+    "lat": 50.353,
+    "lng": 14.4924,
+    "km": 0,
+    "popis": "Start výletu; z Prahy přímý vlak, nádraží kousek od centra.",
+    "prohlidka_min": 0,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip1",
+    "name": "Soutok Labe a Vltavy (vyhlídka)",
+    "lat": 50.3485,
+    "lng": 14.4754,
+    "km": 2.3,
+    "popis": "Vyhlídka pod mělnickým zámkem na soutok dvou největších českých řek.",
+    "prohlidka_min": 15,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip1",
+    "name": "Hořínský park",
+    "lat": 50.3462,
+    "lng": 14.4627,
+    "km": 4.6,
+    "popis": "Zámecký park v Hoříně, příjemný průjezd stinnou alejí.",
+    "prohlidka_min": 0,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip1",
+    "name": "Zdymadlo Hořín (plavební komora)",
+    "lat": 50.3409,
+    "lng": 14.4686,
+    "km": 5.3,
+    "popis": "Secesní plavební zdymadlo z roku 1905 na vraňansko-hořínském kanálu; prohlídka po domluvě.",
+    "prohlidka_min": 40,
+    "cil": true,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip1",
+    "name": "Zoopark Zelčín",
+    "lat": 50.3269,
+    "lng": 14.4363,
+    "km": 9,
+    "popis": "Malý zoopark s domácími zvířaty, ideální zastávka pro menší děti.",
+    "prohlidka_min": 45,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip1",
+    "name": "Lužec nad Vltavou (lávka)",
+    "lat": 50.3195,
+    "lng": 14.3982,
+    "km": 12.4,
+    "popis": "Lávka přes Vltavu u Lužce, otočný bod okruhu.",
+    "prohlidka_min": 0,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip1",
+    "name": "Mělník, žel. stanice (cíl okruhu)",
+    "lat": 50.353,
+    "lng": 14.4924,
+    "km": 24.2,
+    "popis": "Návrat okruhem zpět na nádraží; alternativně lze skončit v Dolních Beřkovicích či Horních Počaplech.",
+    "prohlidka_min": 0,
+    "coords_overit": false,
+    "zaver": true
+  },
+  {
+    "trip": "trip2",
+    "name": "Mšeno, žel. stanice (start)",
+    "lat": 50.4358,
+    "lng": 14.6408,
+    "km": 0,
+    "popis": "Start; v sezóně 2026 sem jezdí cyklovlak Kokořínský rychlík z Prahy (so/ne/svátky, Praha hl. n. 8:37, zpět z Mšena 16:44).",
+    "prohlidka_min": 0,
+    "coords_overit": false,
+    "km_plna": 0
+  },
+  {
+    "trip": "trip2",
+    "name": "Pokličky",
+    "lat": 50.4554,
+    "lng": 14.5889,
+    "km": 6.1,
+    "popis": "Skalní útvary nad Kokořínským dolem, krátká vycházka od cesty.",
+    "prohlidka_min": 30,
+    "coords_overit": false,
+    "varianta": "plna",
+    "km_plna": 6.1
+  },
+  {
+    "trip": "trip2",
+    "name": "Hrad Kokořín",
+    "lat": 50.4403,
+    "lng": 14.5768,
+    "km": 10.1,
+    "popis": "Romantický hrad nad údolím; zvenku výhled i bez prohlídky.",
+    "prohlidka_min": 30,
+    "coords_overit": false,
+    "varianta": "plna",
+    "km_plna": 10.1
+  },
+  {
+    "trip": "trip2",
+    "name": "Pivovar Lobeč (parostrojní)",
+    "lat": 50.461,
+    "lng": 14.6668,
+    "km": 8.7,
+    "popis": "Parostrojní pivovar s pětisetletou tradicí, dnes funkční pivovar s restaurací; prohlídka 75 min (2026: čvc–srp pá/so/ne 14:30, děti do 15 let zdarma). Adresa Lobeč 34.",
+    "prohlidka_min": 75,
+    "cil": true,
+    "coords_overit": false,
+    "km_plna": 27.4
+  },
+  {
+    "trip": "trip2",
+    "name": "Muzeum Eduarda Štorcha (Lobeč)",
+    "lat": 50.4601,
+    "lng": 14.6675,
+    "km": 8.5,
+    "popis": "Malé muzeum autora Lovců mamutů, hned u pivovaru.",
+    "prohlidka_min": 20,
+    "coords_overit": false,
+    "km_plna": 27.3
+  },
+  {
+    "trip": "trip2",
+    "name": "Mšeno, žel. stanice (cíl)",
+    "lat": 50.4358,
+    "lng": 14.6408,
+    "km": 17.6,
+    "popis": "Návrat na nádraží ve Mšeně.",
+    "prohlidka_min": 0,
+    "coords_overit": false,
+    "km_plna": 36.3,
+    "zaver": true
+  },
+  {
+    "trip": "trip3",
+    "name": "Strančice, žel. stanice (start)",
+    "lat": 49.9496,
+    "lng": 14.6777,
+    "km": 0,
+    "popis": "Start; ze Strančic krátký a častý vlak z Prahy.",
+    "prohlidka_min": 0,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip3",
+    "name": "Mnichovice",
+    "lat": 49.9358,
+    "lng": 14.7095,
+    "km": 3.1,
+    "popis": "Městečko s náměstím a občerstvením před stoupáním do Hrusic.",
+    "prohlidka_min": 15,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip3",
+    "name": "Hrusice, památník Josefa Lady",
+    "lat": 49.9052,
+    "lng": 14.7367,
+    "km": 8.7,
+    "popis": "Rodná ves Josefa Lady. POZOR: památník je od 1. 10. 2025 do odvolání uzavřen (rekonstrukce), před výletem ověřit znovuotevření. Ves s Ladovými motivy stojí za procházku i tak.",
+    "prohlidka_min": 20,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip3",
+    "name": "Hvězdárna Ondřejov",
+    "lat": 49.9091,
+    "lng": 14.7813,
+    "km": 15,
+    "popis": "Secesní observatoř s dvoumetrovým dalekohledem, největším v ČR; prohlídka ~2 h (2026: víkendy a svátky V–IX, začátky 10/13/16 h, platba jen hotově). Úsek z Hrusic stoupá.",
+    "prohlidka_min": 120,
+    "cil": true,
+    "coords_overit": false
+  },
+  {
+    "trip": "trip3",
+    "name": "Senohraby, žel. stanice (cíl)",
+    "lat": 49.8972,
+    "lng": 14.7276,
+    "km": 23.1,
+    "popis": "Sjezd k vlaku v Senohrabech; alternativně lze dojet zpět do Mnichovic.",
+    "prohlidka_min": 0,
+    "coords_overit": false
+  }
+]
