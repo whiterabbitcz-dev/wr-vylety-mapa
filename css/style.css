@@ -1,14 +1,20 @@
+/* White Rabbit brand vizuál (cml/brand: colors.md, typography.md).
+ * Černo-žlutá, flat, žlutá střídmě. Text na žluté vždy #784213. */
+
 :root {
-  --accent: #2e7d32;
-  --accent-dark: #1b5e20;
-  --bg: #fafafa;
-  --card: #ffffff;
-  --text: #212121;
-  --muted: #616161;
-  --warn-bg: #fff3e0;
-  --warn-border: #ef6c00;
-  --tab-h: 52px;
-  --profile-h: 150px;
+  --bg: #000000;
+  --bg-card: #1A1A1A;
+  --bg-darker: #0A0A0A;
+  --border: #2A2A2A;
+  --text: #FFFFFF;
+  --text-muted: #888888;
+  --text-soft: #B8B8B8;
+  --accent: #FFC107;
+  --accent-text: #784213;
+  --font: "Century Gothic", "URW Gothic", "Avantgarde", "Trebuchet MS", system-ui, sans-serif;
+  --radius-card: 14px;
+  --radius-ctl: 8px;
+  --sheet-peek: 208px;
 }
 
 * { box-sizing: border-box; }
@@ -17,7 +23,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font);
   background: var(--bg);
   color: var(--text);
   -webkit-text-size-adjust: 100%;
@@ -30,13 +36,40 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
-/* ---- Tabs ---- */
+/* ---- Header ---- */
+#app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 6px;
+  background: var(--bg);
+}
+
+.wr-mark { height: 26px; width: auto; display: block; }
+
+.head-text { display: flex; flex-direction: column; min-width: 0; }
+
+.app-title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tagline {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+/* ---- Taby = segmented control ---- */
 #tabs {
   display: flex;
   flex: 0 0 auto;
-  height: var(--tab-h);
-  background: var(--card);
-  border-bottom: 1px solid #e0e0e0;
+  gap: 2px;
+  margin: 8px 16px 10px;
+  padding: 3px;
+  background: var(--bg-card);
+  border-radius: 10px;
 }
 
 #tabs button {
@@ -44,219 +77,460 @@ body {
   min-width: 0;
   border: none;
   background: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--muted);
-  padding: 4px 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-soft);
+  padding: 7px 4px;
+  border-radius: var(--radius-ctl);
   cursor: pointer;
-  border-bottom: 3px solid transparent;
+  transition: background 0.2s ease, color 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
 #tabs button .sub {
   display: block;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 400;
-  color: var(--muted);
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
 #tabs button[aria-selected="true"] {
-  color: var(--accent-dark);
-  border-bottom-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
 }
 
-/* ---- Layout ---- */
+#tabs button[aria-selected="true"] .sub {
+  color: var(--accent-text);
+  opacity: 0.75;
+}
+
+/* ---- Layout: mapa + bottom sheet ---- */
 main {
   flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
+  position: relative;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 #map {
-  flex: 0 0 52dvh;
-  min-height: 260px;
-  width: 100%;
+  position: absolute;
+  inset: 0 0 var(--sheet-peek) 0;
   z-index: 0;
+  background: var(--bg-darker);
 }
 
-#elevation-wrap {
+/* ---- Bottom sheet ---- */
+#sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100% - 56px);
+  background: var(--bg-card);
+  border-radius: 16px 16px 0 0;
+  border-top: 1px solid var(--border);
+  transform: translateY(calc(100% - var(--sheet-peek)));
+  transition: transform 0.28s cubic-bezier(0.3, 0.9, 0.3, 1);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+}
+
+#sheet.open { transform: translateY(0); }
+
+#sheet-handle {
   flex: 0 0 auto;
-  min-height: 40px;
-  background: var(--card);
-  border-top: 1px solid #e0e0e0;
-}
-
-#elevation .elevation-control.elevation-detached {
   width: 100%;
+  padding: 10px 0 6px;
+  background: none;
+  border: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#elevation-empty {
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--muted);
+#sheet-handle span {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 2px;
+  background: var(--border);
 }
 
-/* ---- Info panel ---- */
-#info {
-  padding: 12px 14px calc(20px + env(safe-area-inset-bottom));
-  background: var(--card);
+#sheet-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 16px calc(16px + env(safe-area-inset-bottom));
 }
 
+#sheet.open #sheet-content { overflow-y: auto; }
+
+/* ---- Titul + obtížnost ---- */
 #info-head {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 12px;
 }
 
 #trip-title {
-  font-size: 19px;
+  font-size: 18px;
+  font-weight: 700;
   margin: 0;
+  line-height: 1.25;
 }
 
 #difficulty-badge {
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 10px;
-  background: var(--warn-border);
-  color: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 
-.stats-grid {
+#difficulty-badge.easy {
+  background: var(--bg-darker);
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+}
+
+#difficulty-badge.hard {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+#difficulty-badge .meter { display: inline-flex; gap: 2px; }
+
+#difficulty-badge .meter i {
+  width: 3px;
+  height: 9px;
+  border-radius: 1.5px;
+  background: currentColor;
+  opacity: 0.25;
+}
+
+#difficulty-badge .meter i.on { opacity: 1; }
+
+/* ---- Stat chipy ---- */
+.stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin: 12px 0;
+  margin: 0 0 12px;
 }
 
 .stat {
-  background: var(--bg);
-  border-radius: 8px;
-  padding: 8px 10px;
+  background: var(--bg-darker);
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-width: 0;
 }
 
 .stat .label {
-  font-size: 11px;
-  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  white-space: nowrap;
 }
 
+.stat .label svg { flex: 0 0 auto; width: 13px; height: 13px; stroke: var(--text-soft); }
+
 .stat .value {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
+  color: var(--accent);
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .stat .value small {
-  font-size: 11px;
+  display: block;
+  font-size: 10px;
   font-weight: 400;
-  color: var(--muted);
+  color: var(--text-muted);
+  white-space: normal;
+  margin-top: 2px;
 }
 
+/* ---- Mikro-labely ---- */
+.micro-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+}
+
+/* ---- Výškový profil ---- */
+#elevation-wrap { margin-top: 4px; }
+
+#elevation {
+  background: var(--bg-darker);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#elevation .elevation-control.elevation-detached { width: 100%; }
+
+#elevation:empty { display: none; }
+
+.wr-theme {
+  --ele-bg: transparent;
+  --ele-area: #FFC107;
+  --ele-alpha: 0.16;
+  --ele-stroke: #FFC107;
+  --ele-axis: #3A3A3A;
+  --ele-grid: rgba(255, 255, 255, 0.06);
+  --ele-poly: #FFC107;
+  --ele-line: #FFC107;
+  --ele-circle: #FFC107;
+  --ele-brush: rgba(255, 193, 7, 0.25);
+}
+
+#elevation .elevation-control .axis text {
+  fill: var(--text-muted);
+  stroke: none;
+  font-weight: 400;
+}
+
+#elevation .elevation-control .mouse-focus-line { stroke: #FFFFFF; }
+
+#elevation .elevation-control .mouse-focus-label-rect {
+  fill: #000000;
+  fill-opacity: 0.82;
+  stroke: var(--border);
+}
+
+/* Trasa na mapě: čistá žlutá linka bez bílého obrysu. Stroke je nutný tady,
+   plugin CSS přebíjí inline atribut a .elevation-polyline žije mimo .wr-theme
+   kontejner, takže by spadl na černou. */
+.elevation-polyline {
+  filter: none;
+  stroke: var(--accent);
+}
+
+/* Zelený/červený start+cíl marker pluginu = semafor, nechceme.
+   Start a cíl ukazují naše vlakové piny. */
+.leaflet-overlay-pane .start-marker,
+.leaflet-overlay-pane .end-marker { display: none; }
+
+#elevation-empty {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-darker);
+  border-radius: 12px;
+}
+
+/* ---- Texty ---- */
 #trip-desc {
-  font-size: 14px;
-  line-height: 1.45;
-  margin: 8px 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  margin: 14px 0 0;
 }
 
 .note {
-  font-size: 12.5px;
-  color: var(--muted);
-  line-height: 1.4;
-  margin: 8px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 10px 0 0;
 }
 
-.note.warn {
-  background: var(--warn-bg);
-  border-left: 3px solid var(--warn-border);
-  color: #5d4037;
-  padding: 8px 10px;
-  border-radius: 0 6px 6px 0;
+.card-note {
+  background: var(--bg-darker);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text-soft);
 }
 
-#shortened {
-  background: #e8f5e9;
-  border-left: 3px solid var(--accent);
-  color: #1b5e20;
-  padding: 8px 10px;
-  border-radius: 0 6px 6px 0;
+.card-note code {
+  font-size: 11px;
+  color: var(--text-soft);
 }
 
+/* ---- Varianta trasy ---- */
 #variant-note {
-  background: #e8f5e9;
-  border-left: 3px solid var(--accent);
-  color: #1b5e20;
-  padding: 8px 10px;
-  border-radius: 0 6px 6px 0;
+  background: var(--bg-darker);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-soft);
+  margin-bottom: 12px;
 }
 
 .variant-btn {
   display: inline-block;
-  margin-top: 6px;
-  padding: 7px 12px;
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #1b5e20;
-  background: #fff;
-  border: 1px solid var(--accent);
-  border-radius: 6px;
+  margin-top: 8px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ---- Stops list ---- */
-#stops-details summary {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 6px 0;
-  cursor: pointer;
-}
-
+/* ---- Zastávky ---- */
 #stops-list {
-  margin: 4px 0 0;
-  padding-left: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 #stops-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--bg-darker);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+#stops-list .stop-pin {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+#stops-list .stop-pin.num {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+#stops-list .stop-pin.train {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+
+#stops-list .stop-pin.train svg {
+  width: 13px;
+  height: 13px;
+  stroke: var(--text-soft);
+}
+
+#stops-list .stop-body { min-width: 0; }
+
+#stops-list .stop-name {
+  font-weight: 700;
+  color: var(--text);
   font-size: 13px;
-  margin-bottom: 6px;
-  line-height: 1.4;
 }
 
 #stops-list .km {
-  color: var(--accent-dark);
-  font-weight: 600;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 11.5px;
 }
 
-#stops-list .visit {
-  color: var(--muted);
-}
+#stops-list .visit { color: var(--text-muted); }
 
-/* ---- Map markers/popups ---- */
+/* ---- Mapové prvky ---- */
 .stop-popup h3 { margin: 0 0 4px; font-size: 14px; }
 .stop-popup p { margin: 2px 0; font-size: 12.5px; }
-.stop-popup .meta { color: var(--muted); }
+.stop-popup .meta { color: var(--accent); font-weight: 700; }
 
+.leaflet-popup-content-wrapper {
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.leaflet-popup-tip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.leaflet-popup-close-button { color: var(--text-muted) !important; }
+
+.leaflet-popup-content { margin: 12px 16px; }
+.leaflet-container { font: inherit; }
+
+/* piny zastávek */
+.pin { display: block; }
+
+.pin-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-num .pin-inner {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid #000000;
+}
+
+.pin-train .pin-inner {
+  background: var(--bg-darker);
+  border: 2px solid #000000;
+}
+
+.pin-train .pin-inner svg {
+  width: 14px;
+  height: 14px;
+  stroke: #FFFFFF;
+}
+
+/* kilometrovník */
 .km-marker {
-  background: var(--accent-dark);
-  color: #fff;
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.82);
+  color: var(--accent);
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
   text-align: center;
-  line-height: 16px;
-  border: 1px solid #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,.4);
+  line-height: 18px;
+  border: none;
+  box-shadow: none;
 }
 
-.mapy-logo img { height: 18px; }
+/* Leaflet ovládání na světlé mapě necháváme defaultní (čitelnost),
+   jen zoom bez zaoblení mimo grid */
+.leaflet-control-zoom a { border-radius: 0; }
 
-/* Larger touch targets in popups */
-.leaflet-popup-content { margin: 10px 14px; }
-.leaflet-container { font: inherit; }
+.mapy-logo img { height: 18px; }

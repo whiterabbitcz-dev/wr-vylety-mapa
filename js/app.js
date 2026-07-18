@@ -232,6 +232,21 @@
     return state.variantAlt && stop.km_plna != null ? stop.km_plna : stop.km;
   }
 
+  // Outline ikony (lucide), inline kvůli self-contained buildu bez CDN.
+  function iconSvg(paths) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + "</svg>";
+  }
+  var ICONS = {
+    bike: iconSvg('<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>'),
+    mountain: iconSvg('<path d="m8 3 4 8 5-5 5 15H2L8 3z"/>'),
+    clock: iconSvg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    train: iconSvg('<rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="M8 15h.01"/><path d="M16 15h.01"/><path d="m6 19-2 3"/><path d="m18 19 2 3"/>'),
+  };
+
+  function isStation(stop) {
+    return /žel\. stanice/.test(stop.name);
+  }
+
   function clearTrip() {
     state.tripLayers.clearLayers();
     if (state.eleLayer) { map.removeLayer(state.eleLayer); state.eleLayer = null; }
@@ -239,13 +254,17 @@
     el("elevation").innerHTML = "";
   }
 
+  // Piny: nádraží (start/cíl) = tmavý pin s vlakem, mezizastávky = žlutý pin
+  // s pořadovým číslem (_pin přiřazeno v showTrip podle pořadí na trase).
   function stopMarker(stop) {
-    var m = L.circleMarker([stop.lat, stop.lng], {
-      radius: 9,
-      color: "#fff",
-      weight: 2,
-      fillColor: stop.cil ? "#d32f2f" : "#1565c0",
-      fillOpacity: 0.95,
+    var isTrain = stop._pin === "train";
+    var m = L.marker([stop.lat, stop.lng], {
+      icon: L.divIcon({
+        className: "pin " + (isTrain ? "pin-train" : "pin-num"),
+        html: '<div class="pin-inner">' + (isTrain ? ICONS.train : String(stop._pin)) + "</div>",
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      }),
     });
     var html = '<div class="stop-popup"><h3>' + stop.name + "</h3>";
     var meta = [];
@@ -263,12 +282,16 @@
     ol.innerHTML = "";
     stops.forEach(function (s) {
       var li = document.createElement("li");
-      var kmTxt = stopKm(s) != null ? '<span class="km">km ' + stopKm(s) + "</span> · " : "";
+      var pin = s._pin === "train"
+        ? '<span class="stop-pin train">' + ICONS.train + "</span>"
+        : '<span class="stop-pin num">' + s._pin + "</span>";
+      var kmTxt = stopKm(s) != null ? ' <span class="km">km ' + stopKm(s) + "</span>" : "";
       var visit = s.prohlidka_min
-        ? ' <span class="visit">(prohlídka ~' + s.prohlidka_min + " min)</span>"
+        ? ' <span class="visit">· prohlídka ~' + s.prohlidka_min + " min</span>"
         : "";
-      li.innerHTML = kmTxt + "<strong>" + s.name + "</strong>" + visit +
-        (s.popis ? "<br>" + s.popis : "");
+      li.innerHTML = pin +
+        '<div class="stop-body"><div><span class="stop-name">' + s.name + "</span>" +
+        kmTxt + visit + "</div>" + (s.popis || "") + "</div>";
       ol.appendChild(li);
     });
   }
@@ -279,8 +302,9 @@
     stats.forEach(function (s) {
       var d = document.createElement("div");
       d.className = "stat";
-      d.innerHTML = '<div class="label">' + s.label + '</div><div class="value">' +
-        s.value + (s.sub ? " <small>" + s.sub + "</small>" : "") + "</div>";
+      d.innerHTML = '<div class="label">' + (s.icon || "") + s.label +
+        '</div><div class="value">' + s.value +
+        (s.sub ? "<small>" + s.sub + "</small>" : "") + "</div>";
       g.appendChild(d);
     });
   }
@@ -306,6 +330,7 @@
     if (state.current !== trip.id) state.variantAlt = false; // přepnutí výletu → default varianta
     state.current = trip.id;
     clearTrip();
+    el("sheet-content").scrollTop = 0;
 
     document.querySelectorAll("#tabs button").forEach(function (b) {
       b.setAttribute("aria-selected", b.dataset.trip === trip.id ? "true" : "false");
@@ -335,6 +360,12 @@
         return ka - kb;
       });
 
+    // Číslování pinů: nádraží mají vlakovou ikonu, ostatní pořadové číslo.
+    var pinNo = 0;
+    stops.forEach(function (s) {
+      s._pin = isStation(s) ? "train" : String(++pinNo);
+    });
+
     stops.forEach(function (s) { state.tripLayers.addLayer(stopMarker(s)); });
     renderStopsList(stops);
 
@@ -357,8 +388,8 @@
     el("difficulty-badge").hidden = true;
     el("shortened").hidden = true;
     renderStats([
-      { label: "Prohlídky a zastávky", value: fmtTime(visitsMin) },
-      { label: "Trasa", value: "—", sub: "GPX čeká na vygenerování" },
+      { icon: ICONS.clock, label: "Prohlídky", value: fmtTime(visitsMin) },
+      { icon: ICONS.bike, label: "Trasa", value: "…", sub: "GPX čeká na vygenerování" },
     ]);
     if (stops.length) {
       map.fitBounds(
@@ -380,15 +411,20 @@
     var rideMin = (km / RIDE_SPEED_KMH) * 60 + (gain != null ? (gain / 10) * CLIMB_MIN_PER_10M : 0);
     var totalMin = rideMin + visitsMin;
 
-    var hard = km > HARD_KM || (gain != null && gain > HARD_GAIN_M);
+    // Obtížnost: meter 1/2/3 (délka a převýšení po jednom bodu) + label.
+    // Monochrome + žlutá, žádný semafor.
+    var hardLen = km > HARD_KM;
+    var hardGain = gain != null && gain > HARD_GAIN_M;
+    var hard = hardLen || hardGain;
+    var level = 1 + (hardLen ? 1 : 0) + (hardGain ? 1 : 0);
     var badge = el("difficulty-badge");
-    if (hard) {
-      badge.hidden = false;
-      badge.textContent =
-        gain != null && gain > HARD_GAIN_M ? "Náročnější: převýšení" : "Náročnější: délka";
-    } else {
-      badge.hidden = true;
-    }
+    badge.hidden = false;
+    badge.className = hard ? "hard" : "easy";
+    var meter = '<span class="meter">';
+    for (var bi = 1; bi <= 3; bi++) meter += '<i class="' + (bi <= level ? "on" : "") + '"></i>';
+    meter += "</span>";
+    badge.innerHTML = meter +
+      (hard ? (hardGain ? "Náročnější: převýšení" : "Náročnější: délka") : "Pohodová");
 
     var short = el("shortened");
     if (hard && trip.zkracena) {
@@ -402,17 +438,13 @@
     }
 
     renderStats([
-      { label: "Délka", value: km.toFixed(1) + " km" },
-      { label: "Převýšení", value: gain != null ? "↑ " + gain + " m" : "—" },
+      { icon: ICONS.bike, label: "Vzdálenost", value: km.toFixed(1) + " km" },
+      { icon: ICONS.mountain, label: "Převýšení", value: gain != null ? gain + " m" : "…" },
       {
-        label: "Čistá jízda",
-        value: "≈ " + fmtTime(rideMin),
-        sub: "tempo " + RIDE_SPEED_KMH + " km/h + kopce",
-      },
-      {
-        label: "Vč. prohlídek",
-        value: "≈ " + fmtTime(totalMin),
-        sub: "prohlídky " + fmtTime(visitsMin),
+        icon: ICONS.clock,
+        label: "S prohlídkou",
+        value: fmtTime(totalMin),
+        sub: "jízda " + fmtTime(rideMin) + " (" + RIDE_SPEED_KMH + " km/h + kopce)",
       },
     ]);
 
@@ -436,10 +468,10 @@
     // Výškový profil — leaflet-elevation vykreslí trasu i graf;
     // tap/hover na profilu ukáže odpovídající bod na mapě.
     state.eleControl = L.control.elevation({
-      theme: "lightblue-theme",
+      theme: "wr-theme",
       detached: true,
       elevationDiv: "#elevation",
-      height: 150,
+      height: 140,
       closeBtn: false,
       followMarker: false,
       autofitBounds: false,
@@ -456,7 +488,10 @@
       time: false,
       speed: false,
       slope: false,
-      polyline: { color: "#d32f2f", weight: 4, opacity: 0.85 },
+      // hotline vypnout: default 'elevation' překreslí trasu výškovým
+      // gradientem (zelená→červená semafor) a polyline zneviditelní.
+      hotline: false,
+      polyline: { color: "#FFC107", weight: 5, opacity: 1, lineCap: "round", lineJoin: "round" },
     });
     state.eleControl.on("eledata_added", function (e) {
       if (e && e.layer) state.eleLayer = e.layer;
@@ -469,6 +504,30 @@
       { padding: [25, 25] }
     );
   }
+
+  // ---------------------------------------------------------------- bottom sheet
+
+  // Dvě snap pozice: peek (handle + titul + staty) a plná. Tap na handle
+  // přepíná, svislý swipe na handle taky (threshold 24 px).
+  var sheet = el("sheet");
+  var sheetHandle = el("sheet-handle");
+  var touchStartY = null;
+  var swiped = false;
+
+  sheetHandle.addEventListener("click", function () {
+    if (swiped) { swiped = false; return; } // toggle už udělal swipe
+    sheet.classList.toggle("open");
+  });
+  sheetHandle.addEventListener("touchstart", function (e) {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  sheetHandle.addEventListener("touchmove", function (e) {
+    if (touchStartY == null) return;
+    var dy = e.touches[0].clientY - touchStartY;
+    if (dy < -24) { sheet.classList.add("open"); touchStartY = null; swiped = true; }
+    else if (dy > 24) { sheet.classList.remove("open"); touchStartY = null; swiped = true; }
+  }, { passive: true });
+  sheetHandle.addEventListener("touchend", function () { touchStartY = null; }, { passive: true });
 
   // ---------------------------------------------------------------- start
 
@@ -486,7 +545,10 @@
         b.setAttribute("role", "tab");
         b.dataset.trip = trip.id;
         b.innerHTML = trip.tab + '<span class="sub">' + trip.tab_sub + "</span>";
-        b.addEventListener("click", function () { showTrip(trip); });
+        b.addEventListener("click", function () {
+          sheet.classList.remove("open"); // nový výlet: zpátky na mapu (peek)
+          showTrip(trip);
+        });
         tabs.appendChild(b);
       });
 

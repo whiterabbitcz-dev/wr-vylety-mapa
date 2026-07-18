@@ -4,38 +4,56 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
   <title>Cyklovýlety: technické památky z Prahy</title>
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <link rel="apple-touch-icon" href="assets/apple-icon-180.png">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="vendor/leaflet-elevation/dist/leaflet-elevation.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header id="tabs" role="tablist" aria-label="Výběr výletu"></header>
+  <header id="app-header">
+    <img src="assets/wr-mark.png" alt="White Rabbit" class="wr-mark">
+    <div class="head-text">
+      <span class="app-title">Cyklovýlety</span>
+      <span class="tagline">Follow the White Rabbit…</span>
+    </div>
+  </header>
+
+  <nav id="tabs" role="tablist" aria-label="Výběr výletu"></nav>
 
   <main>
     <div id="map"></div>
-    <div id="elevation-wrap">
-      <div id="elevation"></div>
-      <div id="elevation-empty" hidden>Výškový profil se zobrazí, až bude vygenerovaná trasa (GPX).</div>
-    </div>
-    <section id="info" aria-live="polite">
-      <div id="info-head">
-        <h1 id="trip-title"></h1>
-        <span id="difficulty-badge" hidden></span>
-      </div>
-      <div id="stats" class="stats-grid"></div>
-      <p id="trip-desc"></p>
-      <div id="variant-note" class="note" hidden></div>
-      <div id="shortened" class="note" hidden></div>
-      <div id="gpx-missing" class="note warn" hidden>
-        Trasa zatím není vygenerovaná, GPX vznikne build skriptem
-        (<code>scripts/build_routes.mjs</code>, potřebuje ORS klíč). Zobrazuji jen zastávky.
-      </div>
-      <details id="stops-details">
-        <summary>Zastávky</summary>
+
+    <section id="sheet" aria-label="Detail výletu">
+      <button id="sheet-handle" type="button" aria-label="Vytáhnout či sbalit detail výletu">
+        <span></span>
+      </button>
+      <div id="sheet-content">
+        <div id="info-head">
+          <h1 id="trip-title"></h1>
+          <span id="difficulty-badge" hidden></span>
+        </div>
+        <div id="stats" class="stats-row"></div>
+        <div id="variant-note" hidden></div>
+        <div id="gpx-missing" class="note card-note" hidden>
+          Trasa zatím není vygenerovaná, GPX vznikne build skriptem
+          (<code>scripts/build_routes.mjs</code>, potřebuje ORS klíč). Zobrazuji jen zastávky.
+        </div>
+        <div id="elevation-wrap">
+          <div class="micro-label">Výškový profil</div>
+          <div id="elevation"></div>
+          <div id="elevation-empty" hidden>Výškový profil se zobrazí, až bude vygenerovaná trasa (GPX).</div>
+        </div>
+        <p id="trip-desc"></p>
+        <div id="shortened" class="note card-note" hidden></div>
+        <div class="micro-label">Zastávky</div>
         <ol id="stops-list"></ol>
-      </details>
-      <p id="routes-note" class="note"></p>
+        <p id="routes-note" class="note"></p>
+      </div>
     </section>
   </main>
 
