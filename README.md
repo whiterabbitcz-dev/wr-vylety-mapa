@@ -115,3 +115,26 @@ vygenerování — nic nespadne.
       zbývá doménové omezení na `whiterabbitcz-dev.github.io` (Martin,
       developer konzole Mapy.com).
 - [ ] Otestovat na skutečném iPhonu (tap na profil, popupy, safe-area).
+
+## Herní vrstva (data)
+
+Obsah hry je v JSON — výměna placeholderů = editace dvou souborů, žádný kód:
+
+- **`data/trips.json`** per mise: `mission_number`, `mission_title`,
+  `mission_subtitle`, `xp_value` (bonus za dokončení mise),
+  `scavenger: [{id, text, icon}]` (foto-hledačka, 3–5 položek, +10 XP/kus),
+  `rabbit_hint` (stálý úkol „vyfoť králíka", +25 XP),
+  `facts: [{stop_id, fact}]` („víš, že…" u zastávek; `stop_id` viz `id`
+  ve `stops.json`).
+- **`data/stops.json`**: `id` (referencují ho fakta), `photo_spot: true`
+  (ikonka „super místo na fotku").
+- **`data/badges.json`**: `badges: [{id, name, description, icon, condition}]`;
+  `condition` je `{type: "auto", metric, gte}` s metrikami `missions_done`,
+  `km_total`, `climb_total`, `xp` (ratchet, odemčené nezhasíná), nebo
+  `{type: "manual"}` (self-check ťuknutím v polici odznaků).
+
+Postup hráčky žije v localStorage (`wr-vylety-mapa.progress`,
+`schema_version: 1`): odškrtnuté položky, hotové mise (se snapshotem
+km/převýšení pro auto odznaky), odznaky, pozice navigátoru. XP se neukládá,
+počítá se vždy ze stavu. Záloha/obnova = JSON přes textarea v modalu
+Skóre a odznaky; tamtéž reset. PWA manifest → „přidat na plochu".
