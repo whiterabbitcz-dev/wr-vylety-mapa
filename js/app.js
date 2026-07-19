@@ -263,6 +263,7 @@
     trips: [],
     stops: [],
     current: null,
+    unfocus: false,    // dočasné opuštění soustředěného režimu (Všechny mise)
     variantAlt: false, // u výletu s varianta_alt: false = default (zkrácená), true = plná
     eleControl: null,
     eleLayer: null,
@@ -715,6 +716,7 @@
     renderMissionState(trip);
     renderScavenger(trip);
     renderCaseButton(trip);
+    applyCaseFocus(trip);
     el("trip-desc").textContent = trip.popis;
     el("routes-note").textContent = trip.znacene_trasy
       ? "Značené trasy: " + trip.znacene_trasy
@@ -1132,6 +1134,16 @@
     try { return localStorage.getItem(DAD_MODE_KEY) === "1"; } catch (e) { return false; }
   }
 
+  // Soustředěný režim: mise s případem schová plánovací chrome (taby, logo,
+  // tagline, trvalé statistiky) — hra nemá vypadat jako plánovač. Statistiky
+  // jsou na vyžádání přes „Info o trase", návrat k výběru misí přes
+  // „Všechny mise". Mise bez případu = plánovač beze změny.
+  function applyCaseFocus(trip) {
+    var focused = !!caseForTrip(trip.id) && !state.unfocus;
+    document.body.classList.toggle("case-focus", focused);
+    document.body.classList.remove("stats-open");
+  }
+
   function renderCaseButton(trip) {
     var btn = el("case-btn");
     var c = caseForTrip(trip.id);
@@ -1172,6 +1184,16 @@
   el("case-btn").addEventListener("click", function () {
     var c = caseForTrip(state.current);
     if (c) openCase(c);
+  });
+
+  el("focus-back").addEventListener("click", function () {
+    state.unfocus = true; // zpátky k výběru misí (chrome se vrátí)
+    var trip = state.trips.find(function (t) { return t.id === state.current; });
+    if (trip) applyCaseFocus(trip);
+  });
+
+  el("route-info-btn").addEventListener("click", function () {
+    document.body.classList.toggle("stats-open");
   });
 
   // ---- radar (jen vzdálenost, bez kompasu)
@@ -1406,17 +1428,9 @@
   // ------------------------------------------------ herní vrstva: navigátor
   //
   // Zjednodušené velké zobrazení „kam teď" pro jeden telefon v ruce
-  // navigátorky. Bez GPS: krokuje se ručně („Jsme tady!"), šipka je azimut
-  // z předchozí zastávky (sever nahoře, jako mapa).
-
-  function bearingDeg(a, b) {
-    var rad = function (d) { return (d * Math.PI) / 180; };
-    var dLon = rad(b.lng - a.lng);
-    var y = Math.sin(dLon) * Math.cos(rad(b.lat));
-    var x = Math.cos(rad(a.lat)) * Math.sin(rad(b.lat)) -
-      Math.sin(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.cos(dLon);
-    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-  }
+  // navigátorky. Bez GPS: krokuje se ručně („Jsme tady!"). Bez šipky:
+  // statický azimut by se tvářil jako kompas a mátl (iOS deviceorientation
+  // je nespolehlivé, živý kompas vědomě neděláme).
 
   function navIndex() {
     var max = state.navStops.length - 1;
@@ -1434,8 +1448,6 @@
     var ka = stopKm(prev), kb = stopKm(target);
     el("nav-km").textContent =
       ka != null && kb != null && kb > ka ? "za " + (kb - ka).toFixed(1) + " km" : "";
-    el("nav-arrow").style.transform =
-      "rotate(" + Math.round(bearingDeg({ lat: prev.lat, lng: prev.lng }, { lat: target.lat, lng: target.lng })) + "deg)";
     el("nav-desc").textContent = target.popis || "";
     var fact = state.factsByStop[target.id];
     el("nav-fact").hidden = !fact;
@@ -1496,6 +1508,7 @@
         b.innerHTML = trip.tab + '<span class="sub">' + trip.tab_sub + "</span>";
         b.addEventListener("click", function () {
           sheet.classList.remove("open"); // nový výlet: zpátky na mapu (peek)
+          state.unfocus = false; // výběr mise s případem → soustředěný režim
           showTrip(trip);
         });
         tabs.appendChild(b);

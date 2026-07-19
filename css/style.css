@@ -1037,6 +1037,48 @@ main {
 #celebrate.show .celebrate-card { animation: celebrate-in 0.35s ease; }
 #celebrate.show .celebrate-icon::after { animation: celebrate-ring 0.9s ease 0.15s forwards; }
 
+/* ---- story mode: soustředěný režim (mise s případem) ----
+   Hra nemá vypadat jako plánovač: pryč taby, logo, tagline i trvalé
+   statistiky. Info o trase je na vyžádání, návrat přes „Všechny mise". */
+
+#focus-back {
+  display: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#route-info-btn {
+  display: none;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  margin: 0 0 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.case-focus #tabs { display: none; }
+body.case-focus .wr-mark,
+body.case-focus .head-text { display: none; }
+body.case-focus #focus-back { display: inline-block; margin-right: auto; }
+body.case-focus #stats { display: none; }
+body.case-focus.stats-open #stats { display: grid; }
+body.case-focus #route-info-btn { display: inline-block; }
+
 /* ---- story mode: detektivní případ ---- */
 #case-btn {
   display: block;
@@ -1252,13 +1294,6 @@ main {
   font-size: 30px;
   font-weight: 700;
   color: var(--accent);
-}
-
-#nav-arrow {
-  display: inline-block;
-  font-size: 44px;
-  line-height: 1;
-  transition: transform 0.3s ease;
 }
 
 #nav-desc { font-size: 14px; color: var(--text-soft); margin: 0; }

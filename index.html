@@ -17,6 +17,7 @@
 </head>
 <body>
   <header id="app-header">
+    <button id="focus-back" type="button">← Všechny mise</button>
     <img src="assets/wr-mark.png" alt="White Rabbit" class="wr-mark">
     <div class="head-text">
       <span class="app-title">Cyklovýlety</span>
@@ -44,6 +45,7 @@
         <p id="mission-subtitle" hidden></p>
         <div id="mission-progress" hidden></div>
         <div id="stats" class="stats-row"></div>
+        <button id="route-info-btn" type="button">ⓘ Info o trase</button>
         <button id="case-btn" type="button" hidden>Zahájit případ</button>
         <button id="nav-mode-btn" type="button" hidden>Navigátor: dej telefon navigátorce</button>
         <div id="variant-note" hidden></div>
@@ -107,7 +109,7 @@
       <button type="button" class="modal-close" data-close="nav-mode" aria-label="Zavřít navigátor">✕</button>
       <div class="micro-label">Další zastávka</div>
       <div id="nav-stop-name">…</div>
-      <div id="nav-distance"><span id="nav-arrow">↑</span><span id="nav-km">…</span></div>
+      <div id="nav-distance"><span id="nav-km">…</span></div>
       <p id="nav-desc"></p>
       <p id="nav-fact" class="nav-fact" hidden></p>
       <div class="nav-buttons">
