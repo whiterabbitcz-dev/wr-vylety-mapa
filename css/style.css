@@ -650,21 +650,6 @@ main {
   color: var(--accent);
 }
 
-#nav-mode-btn {
-  display: block;
-  width: 100%;
-  margin: 0 0 12px;
-  padding: 10px 14px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  background: var(--bg-darker);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
 
 /* foto-hledačka */
 #scavenger-list {
@@ -1078,6 +1063,11 @@ body.case-focus #focus-back { display: inline-block; margin-right: auto; }
 body.case-focus #stats { display: none; }
 body.case-focus.stats-open #stats { display: grid; }
 body.case-focus #route-info-btn { display: inline-block; }
+/* profil a badge obtížnosti: v herním režimu jen pod Info o trase */
+body.case-focus #elevation-wrap { display: none; }
+body.case-focus.stats-open #elevation-wrap { display: block; }
+body.case-focus #difficulty-badge { display: none; }
+body.case-focus.stats-open #difficulty-badge:not([hidden]) { display: inline-flex; }
 
 /* ---- story mode: detektivní případ ---- */
 #case-btn {
@@ -1263,66 +1253,6 @@ body.case-focus #route-info-btn { display: inline-block; }
   .case-card { border-radius: 16px; margin: 16px auto; min-height: calc(100% - 32px); }
 }
 
-/* navigátor */
-#nav-mode { align-items: stretch; }
-
-.nav-card {
-  position: relative;
-  width: 100%;
-  background: var(--bg);
-  padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-  text-align: center;
-}
-
-.nav-card .modal-close { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; }
-
-#nav-stop-name {
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-#nav-distance {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-#nav-desc { font-size: 14px; color: var(--text-soft); margin: 0; }
-
-.nav-fact {
-  font-size: 13px;
-  color: var(--text-soft);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin: 0;
-}
-
-.nav-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 8px; }
-
-#nav-next {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent-text);
-  background: var(--accent);
-  border: none;
-  border-radius: 999px;
-  padding: 14px 26px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
 /* ------------------------------------------------ desktop >= 900 px:
    mapa full-bleed + plovoucí WR boční panel (à la Mapy.com plánovač) */
 @media (min-width: 900px) {
@@ -1359,5 +1289,4 @@ body.case-focus #route-info-btn { display: inline-block; }
   /* modaly na desktopu centrované, ne bottom-sheet */
   .modal { align-items: center; }
   .modal-card { border-radius: 16px; max-height: 84vh; }
-  .nav-card { max-width: 560px; margin: 0 auto; border-radius: 16px; min-height: 70vh; }
 }

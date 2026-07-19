@@ -282,7 +282,6 @@
     badges: [],      // definice odznaků (badges.json)
     cases: [],       // definice případů (cases.json, story mode)
     lastStats: {},   // {tripId: {km, gain}} — poslední spočtené hodnoty z GPX
-    navStops: [],    // zastávky aktivního výletu pro navigátor
   };
 
   // km pozice zastávky pro aktivní variantu (plná verze má vlastní km_plna)
@@ -726,6 +725,20 @@
     renderScavenger(trip);
     renderCaseButton(trip);
     applyCaseFocus(trip);
+
+    // Mise s případem: přistání ROVNOU v zápletce/hře, žádný plánovací
+    // mezikrok. Výjimky: uživatel si případ vědomě odložil kvůli mapě
+    // (pill „Zpět k případu" je vidět) a uzavřený případ (fokus sheet
+    // s „otevřít znovu" stačí, done obrazovku nevnucujeme).
+    var landingCase = caseForTrip(trip.id);
+    if (landingCase && !state.unfocus) {
+      var lcProg = progress.cases[landingCase.id];
+      var steppedOut = caseState.caseDef === landingCase && !el("case-return").hidden;
+      var finished = lcProg && lcProg.finaleDone;
+      if (!steppedOut && !finished && el("case-mode").hidden) openCase(landingCase);
+    } else {
+      el("case-return").hidden = true; // pill mimo misi případu nedává smysl
+    }
     el("trip-desc").textContent = trip.popis;
     el("routes-note").textContent = trip.znacene_trasy
       ? "Značené trasy: " + trip.znacene_trasy
@@ -761,9 +774,6 @@
     });
     renderStopsList(stops);
 
-    // navigátor pracuje se zastávkami aktivní varianty
-    state.navStops = stops;
-    el("nav-mode-btn").hidden = stops.length < 2;
 
     var visitsMin = stops.reduce(function (a, s) { return a + (s.prohlidka_min || 0); }, 0);
 
@@ -1434,60 +1444,8 @@
     showOnboarding();
   });
 
-  // ------------------------------------------------ herní vrstva: navigátor
-  //
-  // Zjednodušené velké zobrazení „kam teď" pro jeden telefon v ruce
-  // navigátorky. Bez GPS: krokuje se ručně („Jsme tady!"). Bez šipky:
-  // statický azimut by se tvářil jako kompas a mátl (iOS deviceorientation
-  // je nespolehlivé, živý kompas vědomě neděláme).
-
-  function navIndex() {
-    var max = state.navStops.length - 1;
-    var idx = progress.nav[state.current] != null ? progress.nav[state.current] : 1;
-    return Math.max(1, Math.min(idx, max));
-  }
-
-  function renderNavigator() {
-    var stops = state.navStops;
-    if (stops.length < 2) return;
-    var idx = navIndex();
-    var target = stops[idx];
-    var prev = stops[idx - 1];
-    el("nav-stop-name").textContent = target.name;
-    var ka = stopKm(prev), kb = stopKm(target);
-    el("nav-km").textContent =
-      ka != null && kb != null && kb > ka ? "za " + (kb - ka).toFixed(1) + " km" : "";
-    el("nav-desc").textContent = target.popis || "";
-    var fact = state.factsByStop[target.id];
-    el("nav-fact").hidden = !fact;
-    if (fact) el("nav-fact").textContent = fact;
-    el("nav-prev").disabled = idx <= 1;
-    el("nav-next").textContent = idx >= stops.length - 1 ? "Cíl! Zavřít navigátor" : "Jsme tady!";
-  }
-
-  el("nav-mode-btn").addEventListener("click", function () {
-    renderNavigator();
-    el("nav-mode").hidden = false;
-  });
-
-  el("nav-next").addEventListener("click", function () {
-    var idx = navIndex();
-    if (idx >= state.navStops.length - 1) {
-      el("nav-mode").hidden = true;
-      progress.nav[state.current] = 1; // příště zas od začátku
-      saveProgress();
-      return;
-    }
-    progress.nav[state.current] = idx + 1;
-    saveProgress();
-    renderNavigator();
-  });
-
-  el("nav-prev").addEventListener("click", function () {
-    progress.nav[state.current] = Math.max(1, navIndex() - 1);
-    saveProgress();
-    renderNavigator();
-  });
+  // Navigátor (samostatné velké „kam teď") byl zrušen — vstup do případu
+  // s radarem ho nahrazuje. Případný postup v progress.nav je inertní.
 
   // ---------------------------------------------------------------- start
 
