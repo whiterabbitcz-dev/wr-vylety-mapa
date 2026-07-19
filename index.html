@@ -76,6 +76,7 @@
         <button type="button" class="modal-close" data-close="badges-modal" aria-label="Zavřít">✕</button>
       </div>
       <div class="xp-hero"><span id="xp-hero-value">0</span><span class="xp-unit">XP</span></div>
+      <p id="xp-nudge" class="note" hidden>Zatím prázdno. Vyraz na první misi, odškrtej úkoly a rozsviť si první odznak.</p>
       <div class="micro-label">Police odznaků</div>
       <div id="badges-grid"></div>
       <div class="micro-label">Záloha postupu</div>
@@ -88,7 +89,10 @@
       </div>
       <textarea id="backup-area" rows="3" placeholder="Sem vlož zálohu (JSON) a dej Načíst zálohu."></textarea>
       <div class="micro-label">Nastavení</div>
-      <button id="reset-btn" type="button" class="danger-btn">Smazat celý postup</button>
+      <div class="backup-row">
+        <button id="show-onboarding" type="button" class="ghost-btn">Zobrazit úvod znovu</button>
+        <button id="reset-btn" type="button" class="danger-btn">Smazat celý postup</button>
+      </div>
     </div>
   </div>
 
@@ -105,6 +109,27 @@
         <button id="nav-prev" type="button" class="ghost-btn">Zpět</button>
         <button id="nav-next" type="button">Jsme tady!</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Onboarding při prvním spuštění -->
+  <div id="onboarding" class="modal" hidden>
+    <div class="onboard-card">
+      <img src="assets/wr-mark.png" class="onboard-mark" alt="White Rabbit">
+      <h2>Následuj Bílého králíka…</h2>
+      <p class="onboard-lead">Tři mise čekají v krajině za Prahou. Králík už vyrazil napřed.
+        Jsi připravená na tu první?</p>
+      <ol class="onboard-steps" id="onboard-steps"></ol>
+      <button id="onboard-go" type="button">Jdu na to!</button>
+    </div>
+  </div>
+
+  <!-- WR oslava (mise splněna / odznak) -->
+  <div id="celebrate" hidden>
+    <div class="celebrate-card">
+      <span class="celebrate-icon" id="celebrate-icon"></span>
+      <div class="celebrate-title" id="celebrate-title"></div>
+      <div class="celebrate-sub" id="celebrate-sub"></div>
     </div>
   </div>
 

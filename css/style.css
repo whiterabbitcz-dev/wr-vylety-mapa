@@ -618,21 +618,36 @@ main {
 }
 
 #mission-progress {
-  display: inline-block;
+  display: block;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-soft);
   background: var(--bg-darker);
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px 10px;
+  border-radius: 12px;
+  padding: 8px 10px;
   margin: 0 0 12px;
 }
 
-#mission-progress.complete {
+#mission-progress .mp-bar {
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: #000000;
+  overflow: hidden;
+}
+
+#mission-progress .mp-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
   background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+#mission-progress.complete {
   border-color: var(--accent);
-  color: var(--accent-text);
+  color: var(--accent);
 }
 
 #nav-mode-btn {
@@ -708,6 +723,30 @@ main {
 .scav-item.done .scav-check { color: var(--text); }
 .scav-item.done .scav-box { background: var(--accent); border-color: var(--accent); }
 .scav-item.done .scav-xp { color: var(--accent); }
+
+/* odškrtnuto: text zešedne a přeškrtne, políčko poskočí (WR žlutá + šedá) */
+.scav-item.done .scav-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(136, 136, 136, 0.7);
+}
+
+@keyframes scav-pop {
+  0% { transform: scale(0.6); }
+  55% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.scav-box.pop { animation: scav-pop 0.3s ease; }
+
+/* XP chip poskočení při zisku */
+@keyframes xp-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+#xp-button.bump { animation: xp-bump 0.45s ease; }
 
 /* fakta a foto-spoty */
 .stop-fact {
@@ -852,6 +891,151 @@ main {
   padding: 8px;
   resize: vertical;
 }
+
+/* ---- onboarding (first-run, přes rozmazanou mapu) ---- */
+#onboarding {
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  padding: 20px;
+}
+
+.onboard-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px calc(24px + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.onboard-mark { height: 44px; margin-bottom: 14px; }
+
+.onboard-card h2 { font-size: 21px; margin: 0 0 8px; }
+
+.onboard-lead {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  margin: 0 0 20px;
+}
+
+.onboard-steps {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.onboard-steps li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-darker);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.onboard-steps li > svg {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  stroke: var(--accent);
+}
+
+.onboard-steps strong { display: block; font-size: 14px; }
+
+.onboard-steps span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+#onboard-go {
+  width: 100%;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 26px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- WR oslava (žlutý záblesk, flat, žádné konfety) ---- */
+#celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+#celebrate[hidden] { display: none; }
+
+.celebrate-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent);
+  font-size: 44px;
+  margin-bottom: 16px;
+}
+
+.celebrate-icon::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+}
+
+.celebrate-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.celebrate-sub {
+  font-size: 13.5px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: 6px;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@keyframes celebrate-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes celebrate-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+#celebrate.show .celebrate-card { animation: celebrate-in 0.35s ease; }
+#celebrate.show .celebrate-icon::after { animation: celebrate-ring 0.9s ease 0.15s forwards; }
 
 /* navigátor */
 #nav-mode { align-items: stretch; }

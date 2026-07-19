@@ -352,20 +352,29 @@
   // odznaky), vyhodnocení odznaků, přerender XP. Odznak je ratchet — jednou
   // odemčený už nezhasne, i kdyby se metrika snížila (import, odškrtnutí).
   function afterProgressChange() {
+    var newlyDone = [];
     state.trips.forEach(function (trip) {
       var m = progress.missions[trip.id];
       if (isMissionComplete(trip)) {
         if (!m || !m.done) {
           var stats = state.lastStats[trip.id] || { km: 0, gain: 0 };
           progress.missions[trip.id] = { done: true, km: stats.km, gain: stats.gain, xp: missionXpValue(trip) };
+          newlyDone.push(trip);
         }
       } else if (m && m.done) {
         delete progress.missions[trip.id]; // odškrtla položku → mise zas otevřená
       }
     });
-    evalAutoBadges();
+    var newBadges = evalAutoBadges();
     saveProgress();
     renderXp();
+    // WR oslavy: nejdřív mise, pak čerstvé odznaky (fronta, žádné konfety)
+    newlyDone.forEach(function (trip) {
+      celebrate("🐇", "Mise splněna!", "+" + progress.missions[trip.id].xp + " XP · " + (trip.mission_title || trip.nazev));
+    });
+    newBadges.forEach(function (b) {
+      celebrate(b.icon, "Odznak: " + b.name, b.description);
+    });
   }
 
   function metricValue(metric) {
@@ -383,16 +392,82 @@
   }
 
   function evalAutoBadges() {
+    var fresh = [];
     (state.badges || []).forEach(function (b) {
       if (b.condition.type !== "auto" || progress.badges[b.id]) return;
-      if (metricValue(b.condition.metric) >= b.condition.gte) progress.badges[b.id] = true;
+      if (metricValue(b.condition.metric) >= b.condition.gte) {
+        progress.badges[b.id] = true;
+        fresh.push(b);
+      }
     });
+    return fresh;
   }
 
+  // WR oslava: střídmý žlutý záblesk v brand barvě, fronta (mise + odznaky
+  // můžou přijít naráz). Tap přeskočí.
+  var celebrateQueue = [];
+  var celebrating = false;
+
+  function celebrate(icon, title, sub) {
+    celebrateQueue.push({ icon: icon, title: title, sub: sub });
+    runCelebration();
+  }
+
+  function runCelebration() {
+    if (celebrating || !celebrateQueue.length) return;
+    celebrating = true;
+    var c = celebrateQueue.shift();
+    var box = el("celebrate");
+    el("celebrate-icon").textContent = c.icon;
+    el("celebrate-title").textContent = c.title;
+    el("celebrate-sub").textContent = c.sub || "";
+    box.hidden = false;
+    box.classList.remove("show");
+    void box.offsetWidth;
+    box.classList.add("show");
+    var timer = setTimeout(close, 2000);
+    function close() {
+      clearTimeout(timer);
+      box.hidden = true;
+      box.removeEventListener("click", close);
+      celebrating = false;
+      runCelebration();
+    }
+    box.addEventListener("click", close);
+  }
+
+  // XP naskakuje animovaně (count-up + poskočení chipu), ne skokem.
+  // setInterval místo requestAnimationFrame: rAF některé webview škrtí
+  // a číslo by zůstalo viset na staré hodnotě.
+  var displayedXp = 0;
+  var xpTimer = null;
   function renderXp() {
-    var xp = computeXp();
-    el("xp-value").textContent = xp;
-    el("xp-hero-value").textContent = xp;
+    var target = computeXp();
+    if (target === displayedXp) {
+      el("xp-value").textContent = target;
+      el("xp-hero-value").textContent = target;
+      return;
+    }
+    if (target > displayedXp) {
+      var chip = el("xp-button");
+      chip.classList.remove("bump");
+      void chip.offsetWidth; // restart animace
+      chip.classList.add("bump");
+    }
+    var from = displayedXp;
+    var delta = target - from;
+    var t0 = Date.now();
+    var dur = 600;
+    displayedXp = target;
+    if (xpTimer) clearInterval(xpTimer);
+    xpTimer = setInterval(function () {
+      var p = Math.min(1, (Date.now() - t0) / dur);
+      p = 1 - Math.pow(1 - p, 3); // ease-out
+      var v = Math.round(from + delta * p);
+      el("xp-value").textContent = v;
+      el("xp-hero-value").textContent = v;
+      if (p >= 1) { clearInterval(xpTimer); xpTimer = null; }
+    }, 33);
   }
 
   // Outline ikony (lucide), inline kvůli self-contained buildu bez CDN.
@@ -406,6 +481,8 @@
     train: iconSvg('<rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="M8 15h.01"/><path d="M16 15h.01"/><path d="m6 19-2 3"/><path d="m18 19 2 3"/>'),
     camera: iconSvg('<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>'),
     info: iconSvg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'),
+    mapFold: iconSvg('<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.895l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>'),
+    trophy: iconSvg('<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>'),
   };
 
   function isStation(stop) {
@@ -532,7 +609,9 @@
 
   // Foto-hledačka + králík: odškrtávací seznam, žádný upload — fotka žije
   // v roličce telefonu, tady jen „hotovo".
-  function renderScavenger(trip) {
+  // justToggledId: položka odškrtnutá právě teď dostane pop animaci
+  // (bez toho by poskočily všechny hotové položky při každém rerenderu).
+  function renderScavenger(trip, justToggledId) {
     var wrap = el("scavenger-wrap");
     var ul = el("scavenger-list");
     var items = trip.scavenger || [];
@@ -544,16 +623,17 @@
     function addItem(id, icon, text, xp, isRabbit) {
       var li = document.createElement("li");
       li.className = "scav-item" + (checks[id] ? " done" : "") + (isRabbit ? " rabbit" : "");
+      var pop = checks[id] && id === justToggledId ? " pop" : "";
       li.innerHTML =
         '<button type="button" class="scav-check" aria-pressed="' + !!checks[id] + '">' +
         '<span class="scav-icon">' + icon + "</span>" +
         '<span class="scav-text">' + text + '<span class="scav-xp">+' + xp + " XP</span></span>" +
-        '<span class="scav-box">' + (checks[id] ? "✓" : "") + "</span></button>";
+        '<span class="scav-box' + pop + '">' + (checks[id] ? "✓" : "") + "</span></button>";
       li.querySelector("button").addEventListener("click", function () {
         if (checks[id]) delete checks[id];
         else checks[id] = true;
         afterProgressChange();
-        renderScavenger(trip);
+        renderScavenger(trip, checks[id] ? id : null);
         renderMissionState(trip);
       });
       ul.appendChild(li);
@@ -576,11 +656,15 @@
       (checks.rabbit ? 1 : 0);
     var m = progress.missions[trip.id];
     var complete = m && m.done;
+    var pct = complete ? 100 : Math.round((done / total) * 100);
     box.hidden = false;
     box.className = complete ? "complete" : "";
-    box.innerHTML = complete
-      ? "Mise splněna ✓ bonus +" + (m.xp != null ? m.xp : trip.xp_value || 0) + " XP"
-      : "Úkoly mise: " + done + " / " + total;
+    box.innerHTML =
+      '<div class="mp-row"><span>' +
+      (complete
+        ? "Mise splněna ✓ bonus +" + (m.xp != null ? m.xp : trip.xp_value || 0) + " XP"
+        : "Úkoly mise: " + done + " / " + total) +
+      '</span></div><div class="mp-bar"><i style="width:' + pct + '%"></i></div>';
   }
 
   function showTrip(trip) {
@@ -881,6 +965,8 @@
   function renderBadges() {
     var grid = el("badges-grid");
     grid.innerHTML = "";
+    // prázdný stav: při nule pobídnout, ne zet prázdnotou
+    el("xp-nudge").hidden = computeXp() > 0 || Object.keys(progress.badges).length > 0;
     state.badges.forEach(function (b) {
       var unlocked = !!progress.badges[b.id];
       var tile = document.createElement("button");
@@ -893,10 +979,12 @@
         (b.condition.type === "manual" ? '<span class="badge-tap">' + (unlocked ? "splněno ✓" : "ťukni, až to splníš") + "</span>" : "");
       if (b.condition.type === "manual") {
         tile.addEventListener("click", function () {
-          if (progress.badges[b.id]) delete progress.badges[b.id];
-          else progress.badges[b.id] = true;
+          var awarding = !progress.badges[b.id];
+          if (awarding) progress.badges[b.id] = true;
+          else delete progress.badges[b.id];
           afterProgressChange();
           renderBadges();
+          if (awarding) celebrate(b.icon, "Odznak: " + b.name, b.description);
         });
       } else {
         tile.disabled = true;
@@ -951,6 +1039,29 @@
     var trip = state.trips.find(function (t) { return t.id === state.current; });
     if (trip) { renderScavenger(trip); renderMissionState(trip); }
   }
+
+  // ------------------------------------------------ herní vrstva: onboarding
+
+  var ONBOARD_KEY = "wr-vylety-mapa.onboarded";
+
+  function showOnboarding() {
+    var steps = el("onboard-steps");
+    steps.innerHTML =
+      "<li>" + ICONS.mapFold + "<div><strong>Vyber misi</strong><span>Tři výpravy za technickými památkami.</span></div></li>" +
+      "<li>" + ICONS.bike + "<div><strong>Šlápni do pedálů</strong><span>Veď tátu od zastávky k zastávce.</span></div></li>" +
+      "<li>" + ICONS.trophy + "<div><strong>Sbírej úkoly, XP a odznaky</strong><span>Foto-hledačka, králík a police trofejí.</span></div></li>";
+    el("onboarding").hidden = false;
+  }
+
+  el("onboard-go").addEventListener("click", function () {
+    el("onboarding").hidden = true;
+    try { localStorage.setItem(ONBOARD_KEY, "1"); } catch (e) { /* ok */ }
+  });
+
+  el("show-onboarding").addEventListener("click", function () {
+    el("badges-modal").hidden = true;
+    showOnboarding();
+  });
 
   // ------------------------------------------------ herní vrstva: navigátor
   //
@@ -1045,6 +1156,11 @@
       });
 
       showTrip(state.trips[0]);
+
+      // úplně první spuštění: onboarding přes rozmazanou mapu (jen jednou)
+      var onboarded = null;
+      try { onboarded = localStorage.getItem(ONBOARD_KEY); } catch (e) { /* ok */ }
+      if (!onboarded) showOnboarding();
     })
     .catch(function (err) {
       console.error(err);
