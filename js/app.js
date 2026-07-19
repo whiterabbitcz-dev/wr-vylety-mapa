@@ -1120,6 +1120,11 @@
     watchId: null,  // geolocation watch
     simTimer: null, // táta-simulace
     lastDist: null,
+    // iOS Safari geolokační request mimo uživatelské gesto tiše zahodí —
+    // okno „povolit polohu" se nikdy neukáže. První watchPosition proto smí
+    // odejít jen synchronně z ťuknutí; jakmile se to jednou stane (nebo je
+    // povolení už udělené), radar se v dalších přesunech spouští sám.
+    radarArmed: false,
   };
 
   function caseForTrip(tripId) {
@@ -1198,10 +1203,12 @@
 
   el("case-close").addEventListener("click", function () { closeCase(false); });
   el("case-return").addEventListener("click", function () {
+    caseState.radarArmed = true; // gesto → geolokace smí rovnou
     if (caseState.caseDef) openCase(caseState.caseDef);
   });
   el("case-btn").addEventListener("click", function () {
     var c = caseForTrip(state.current);
+    caseState.radarArmed = true; // gesto → geolokace smí rovnou
     if (c) openCase(c);
   });
 
@@ -1229,16 +1236,28 @@
     stopRadar();
     caseState.lastDist = null;
     if (!navigator.geolocation) {
-      setRadarStatus("GPS tu není. Použij „Jsem tady i bez GPS“.");
+      setRadarStatus("Tohle zařízení GPS neumí. Ťukni na „Jsem tady i bez GPS“.");
       return;
     }
+    if (!window.isSecureContext) {
+      setRadarStatus("GPS jede jen přes https. Ťukni na „Jsem tady i bez GPS“.");
+      return;
+    }
+    setRadarStatus("Hledám polohu… (když se iPhone zeptá, povol ji)");
     caseState.watchId = navigator.geolocation.watchPosition(
       function (pos) {
         var d = haversineKm([pos.coords.latitude, pos.coords.longitude], [cp.lat, cp.lng]) * 1000;
         updateRadar(d, cp);
       },
-      function () {
-        setRadarStatus("GPS mlčí (nepovolená nebo bez signálu). Použij „Jsem tady i bez GPS“.");
+      function (err) {
+        if (err && err.code === 1) {
+          // PERMISSION_DENIED: další prompty už nepřijdou, watch je mrtvý
+          stopRadar();
+          setRadarStatus("Poloha je pro tenhle web zakázaná. Povol ji v nastavení prohlížeče, nebo ťukni na „Jsem tady i bez GPS“.");
+        } else {
+          // POSITION_UNAVAILABLE / TIMEOUT: watch běží dál, signál se může chytit
+          setRadarStatus("GPS zatím mlčí, zkouším dál… Kdyžtak ťukni na „Jsem tady i bez GPS“.");
+        }
       },
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
     );
@@ -1299,6 +1318,7 @@
         '<p class="case-story">' + c.intro.story + "</p>" +
         '<button type="button" class="case-cta" id="case-go">Vydat se po stopě</button>';
       el("case-go").addEventListener("click", function () {
+        caseState.radarArmed = true; // gesto → geolokace smí rovnou
         caseState.view = "transit";
         renderCase();
       });
@@ -1308,7 +1328,8 @@
         '<div class="micro-label">Stopa ' + (caseState.cpIndex + 1) + " z " + total + "</div>" +
         '<p class="case-story">' + cp.transit_hint + "</p>" +
         '<div id="radar-frame"><div id="radar-dist">…</div><div class="radar-sub">k místu</div></div>' +
-        '<p class="note" id="radar-status">Hledám signál…</p>' +
+        '<p class="note" id="radar-status">Hledám polohu…</p>' +
+        '<button type="button" class="case-cta" id="case-radar-start" hidden>Spustit radar</button>' +
         '<button type="button" class="case-cta" id="case-checkin" disabled>Jsem na místě</button>' +
         (dadMode() ? '<button type="button" class="ghost-btn case-sim" id="case-sim">Simulovat příchod (táta-režim)</button>' : "") +
         '<div class="case-links">' +
@@ -1325,7 +1346,33 @@
       el("case-manual").addEventListener("click", checkin);
       el("case-showmap").addEventListener("click", function () { closeCase(false); });
       if (dadMode()) el("case-sim").addEventListener("click", function () { simulateArrival(cp); });
-      startRadar(cp);
+      el("case-radar-start").addEventListener("click", function () {
+        caseState.radarArmed = true;
+        el("case-radar-start").hidden = true;
+        startRadar(cp); // synchronně v gestu → iOS ukáže okno na povolení
+      });
+      if (caseState.radarArmed) {
+        startRadar(cp);
+      } else {
+        // Přistání v transit bez gesta (návrat do rozehraného případu po
+        // načtení stránky): watchPosition by iOS tiše zahodil, takže radar
+        // čeká na ťuknutí. Když už uživatel polohu povolil dřív, prompt
+        // nehrozí a radar se spustí rovnou (Permissions API, kde je).
+        el("case-radar-start").hidden = false;
+        setRadarStatus("Ťukni na „Spustit radar“ — iPhone se zeptá na polohu.");
+        if (navigator.permissions && navigator.permissions.query) {
+          navigator.permissions.query({ name: "geolocation" }).then(function (st) {
+            var samePlace = caseState.view === "transit" &&
+              caseState.caseDef === c && c.checkpoints[caseState.cpIndex] === cp;
+            if (st.state === "granted" && samePlace && caseState.watchId == null) {
+              caseState.radarArmed = true;
+              var b = el("case-radar-start");
+              if (b) b.hidden = true;
+              startRadar(cp);
+            }
+          }).catch(function () { /* starší WebKit: zůstane tlačítko */ });
+        }
+      }
 
     } else if (caseState.view === "task") {
       box.innerHTML =
@@ -1363,6 +1410,7 @@
         '<button type="button" class="case-cta" id="case-next">' +
         (last ? "Ke složení klíče" : "Sledovat další stopu") + "</button>";
       el("case-next").addEventListener("click", function () {
+        caseState.radarArmed = true; // gesto → geolokace smí rovnou
         if (last) { caseState.view = "finale"; }
         else { caseState.cpIndex++; caseState.view = "transit"; }
         caseState.attempts = 0;
@@ -1387,7 +1435,8 @@
         renderCase();
       }
       el("case-code-submit").addEventListener("click", function () {
-        if (normAnswer(el("case-code").value) === normAnswer(c.finale.code)) { finish(); return; }
+        var codeTask = { answer: c.finale.code, answer_alt: c.finale.answer_alt || [] };
+        if (answerMatches(codeTask, el("case-code").value)) { finish(); return; }
         caseState.attempts++;
         el("case-feedback").hidden = false;
         if (caseState.attempts >= 3) el("case-reveal").hidden = false;
@@ -1476,6 +1525,7 @@
         b.addEventListener("click", function () {
           sheet.classList.remove("open"); // nový výlet: zpátky na mapu (peek)
           state.unfocus = false; // výběr mise s případem → soustředěný režim
+          caseState.radarArmed = true; // gesto → geolokace smí rovnou
           showTrip(trip);
         });
         tabs.appendChild(b);

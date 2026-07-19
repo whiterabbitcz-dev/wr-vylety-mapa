@@ -16,13 +16,12 @@
           "threshold_m": 35,
           "task": {
             "prompt": "Pavilon je celý odlitý z litiny a někde na něm je vyrytý rok, kdy vznikl. Najdi ten letopočet a vezmi jeho POSLEDNÍ číslici. To je králíkovo první číslo.",
-            "answer": "",
+            "answer": "1",
             "answer_alt": [],
-            "hint": "Hledej u vstupu nebo na štítu. Číslo bude začínat 18…",
-            "todo": "zamknout na dry runu: poslední číslice vyrytého roku"
+            "hint": "Hledej u vstupu nebo na štítu. Číslo bude začínat 18…"
           },
           "reward": {
-            "fragment": "Na víčku hodinek se rozsvítilo první číslo. Druhý stroj stojí kousek dál na pláni, měří čas a přitom nikam nejde.",
+            "fragment": "Sedí. První číslo hodinek je 1. Druhý stroj stojí kousek dál na pláni, měří čas a přitom nikam nejde.",
             "xp": 30
           }
         },
@@ -33,14 +32,13 @@
           "transit_hint": "Vyjdi na velkou pláň, kde se nad řekou pomalu houpe rudá ručička.",
           "threshold_m": 35,
           "task": {
-            "prompt": "Ke králíkovu druhému číslu vede cesta pod nohama. Spočítej všechny velké kamenné schody, které vedou nahoru k metronomu, odspoda až k plošině. Kolik jich je? (Když ti vyjde víc číslic, sečti je, třeba 62 → 6+2 → 8.)",
-            "answer": "",
+            "prompt": "Ke králíkovu druhému číslu vede cesta pod nohama. Spočítej všechny velké kamenné schody, které vedou nahoru k metronomu, odspoda až k plošině. Kolik jich je? (Sčítej číslice, dokud nezůstane jen jedna, třeba 758 → 7+5+8 → 20 → 2+0 → 2.)",
+            "answer": "4",
             "answer_alt": [],
-            "hint": "Počítej jen velké stupně, ne obrubníky. A pak číslice sečti.",
-            "todo": "zamknout na dry runu: ciferný součet počtu schodů"
+            "hint": "Počítej jen velké stupně, ne obrubníky. A pak číslice sčítej, dokud nezůstane jedna."
           },
           "reward": {
-            "fragment": "Druhé číslo svítí. Poslední se schovává tam, kde se přes sto let pořád dokola točí koně.",
+            "fragment": "Správně. Druhé číslo je 4. Poslední se schovává tam, kde se přes sto let pořád dokola točí koně.",
             "xp": 30
           }
         },
@@ -52,21 +50,20 @@
           "threshold_m": 35,
           "task": {
             "prompt": "Králíkovo poslední číslo hlídají koně. Spočítej, kolik koní na kolotoči je. (Zase: když ti vyjde víc číslic, sečti je, třeba 19 → 1+9 → 10 → 1+0 → 1.)",
-            "answer": "",
+            "answer": "9",
             "answer_alt": [],
-            "hint": "Obejdi celý kolotoč a počítej i ty vzadu. Pak číslice sečti.",
-            "todo": "zamknout na dry runu: ciferný součet počtu koní"
+            "hint": "Obejdi celý kolotoč a počítej i ty vzadu. Pak číslice sečti."
           },
           "reward": {
-            "fragment": "Máš všechna tři čísla. Slož je za sebou a přečti čas.",
+            "fragment": "Třetí číslo je 9. Teď máš všechna tři: 1, 4, 9. Slož je za sebou a přečti čas.",
             "xp": 40
           }
         }
       ],
       "finale": {
-        "assembly_prompt": "Slož tři čísla za sebou. Vyjde ti čas, hodina a minuty, na kterých se králíkovy hodinky zastavily. Zadej ho.",
-        "code": "",
-        "todo": "zamknout po dry runu (tři číslice ve tvaru H:MM)",
+        "assembly_prompt": "Slož tři čísla, která jsi našel, za sebou. Vyjde ti čas, hodina a minuty, na kterých se králíkovy hodinky zastavily. Zadej ho ve tvaru H:MM.",
+        "code": "1:49",
+        "answer_alt": ["149", "1.49"],
         "resolution": "To je čas, kdy králík utíkal na vlak a hodinky ve spěchu zapomněl, tam, kde se pořád něco točí. Ale ty jsi je našla, detektive. Případ uzavřen. Teď máš právo na odměnu, běž si pro zmrzlinu.",
         "badge_id": "zmrzlinova-kralovna"
       }
