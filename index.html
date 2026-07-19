@@ -44,6 +44,7 @@
         <p id="mission-subtitle" hidden></p>
         <div id="mission-progress" hidden></div>
         <div id="stats" class="stats-row"></div>
+        <button id="case-btn" type="button" hidden>Zahájit případ</button>
         <button id="nav-mode-btn" type="button" hidden>Navigátor: dej telefon navigátorce</button>
         <div id="variant-note" hidden></div>
         <div id="gpx-missing" class="note card-note" hidden>
@@ -93,6 +94,10 @@
         <button id="show-onboarding" type="button" class="ghost-btn">Zobrazit úvod znovu</button>
         <button id="reset-btn" type="button" class="danger-btn">Smazat celý postup</button>
       </div>
+      <label class="dad-toggle">
+        <input type="checkbox" id="dad-mode-toggle">
+        Táta-režim: simulace příchodu na místo (ladění od stolu)
+      </label>
     </div>
   </div>
 
@@ -123,6 +128,15 @@
       <button id="onboard-go" type="button">Jdu na to!</button>
     </div>
   </div>
+
+  <!-- Story mode: detektivní případ -->
+  <div id="case-mode" class="modal" hidden>
+    <div class="case-card">
+      <button type="button" class="modal-close" id="case-close" aria-label="Odložit případ">✕</button>
+      <div id="case-view"></div>
+    </div>
+  </div>
+  <button id="case-return" type="button" hidden>🕵️ Zpět k případu</button>
 
   <!-- WR oslava (mise splněna / odznak) -->
   <div id="celebrate" hidden>

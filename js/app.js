@@ -270,6 +270,7 @@
     kmMarkers: [],   // markery kilometrovníku (kvůli collision s piny)
     stopLatLngs: [], // pozice pinů zastávek (kvůli collision)
     badges: [],      // definice odznaků (badges.json)
+    cases: [],       // definice případů (cases.json, story mode)
     lastStats: {},   // {tripId: {km, gain}} — poslední spočtené hodnoty z GPX
     navStops: [],    // zastávky aktivního výletu pro navigátor
   };
@@ -299,6 +300,7 @@
       badges: {},   // {badgeId: true} — odemčené (auto i manuální)
       missions: {}, // {tripId: {done: true, km, gain}} — snapshot pro auto odznaky
       nav: {},      // {tripId: index další zastávky v navigátoru}
+      cases: {},    // {caseId: {solved: {cpId: {done, skipped}}, finaleDone}}
     };
   }
 
@@ -345,6 +347,16 @@
       var m = progress.missions[trip.id];
       if (m && m.done) xp += m.xp != null ? m.xp : trip.xp_value || 0;
     });
+    // XP z případů (story mode): jen vyřešené šifry (přeskočené bez XP);
+    // iteruje se přes ZNÁMÉ případy, sirotek po smazání se nepočítá
+    (state.cases || []).forEach(function (c) {
+      var cp = progress.cases[c.id];
+      if (!cp || !cp.solved) return;
+      (c.checkpoints || []).forEach(function (k) {
+        var s = cp.solved[k.id];
+        if (s && s.done && !s.skipped) xp += (k.reward && k.reward.xp) || 0;
+      });
+    });
     return xp;
   }
 
@@ -372,6 +384,7 @@
       }
     });
     var newBadges = evalAutoBadges();
+    if (typeof awardCaseBadges === "function") awardCaseBadges();
     saveProgress();
     renderXp();
     // WR oslavy: nejdřív mise, pak čerstvé odznaky (fronta, žádné konfety)
@@ -398,6 +411,11 @@
     if (metric === "rabbits_done") {
       return state.trips.filter(function (t) {
         return progress.checks[t.id] && progress.checks[t.id].rabbit;
+      }).length;
+    }
+    if (metric === "cases_done") {
+      return (state.cases || []).filter(function (c) {
+        return progress.cases[c.id] && progress.cases[c.id].finaleDone;
       }).length;
     }
     return 0;
@@ -696,6 +714,7 @@
     el("trip-title").textContent = trip.mission_title || trip.nazev;
     renderMissionState(trip);
     renderScavenger(trip);
+    renderCaseButton(trip);
     el("trip-desc").textContent = trip.popis;
     el("routes-note").textContent = trip.znacene_trasy
       ? "Značené trasy: " + trip.znacene_trasy
@@ -1050,7 +1069,315 @@
   function refreshCurrentTrip() {
     if (!state.current) return;
     var trip = state.trips.find(function (t) { return t.id === state.current; });
-    if (trip) { renderScavenger(trip); renderMissionState(trip); }
+    if (trip) { renderScavenger(trip); renderMissionState(trip); renderCaseButton(trip); }
+  }
+
+  // Táta-režim (dev): schovaný přepínač v nastavení, default vyplé
+  var dadToggle = el("dad-mode-toggle");
+  dadToggle.checked = dadMode();
+  dadToggle.addEventListener("change", function () {
+    try {
+      if (dadToggle.checked) localStorage.setItem(DAD_MODE_KEY, "1");
+      else localStorage.removeItem(DAD_MODE_KEY);
+    } catch (e) { /* ok */ }
+  });
+
+  // ------------------------------------------------ story mode: case engine
+  //
+  // Volitelný detektivní režim nad misí: zápletka → radar (jen vzdálenost
+  // z GPS, žádný kompas) → check-in (pásmo ~35 m + VŽDY ruční fallback)
+  // → šifra (normalizovaná kontrola, hint po 2 pokusech, skip po 3)
+  // → útržek příběhu + XP → finále (složení kódu) → rozuzlení + odznak.
+  // Vše data-driven z data/cases.json, mise bez případu jedou beze změny.
+
+  var DAD_MODE_KEY = "wr-vylety-mapa.dadmode";
+  var caseState = {
+    caseDef: null,  // aktivní případ (definice z cases.json)
+    cpIndex: 0,     // index aktuální stopy
+    view: null,     // intro | transit | task | reward | finale | done
+    attempts: 0,    // špatné pokusy u aktuální šifry / finále
+    watchId: null,  // geolocation watch
+    simTimer: null, // táta-simulace
+    lastDist: null,
+  };
+
+  function caseForTrip(tripId) {
+    return (state.cases || []).find(function (c) { return c.mission_ref === tripId; });
+  }
+
+  function caseProg(caseId) {
+    if (!progress.cases[caseId]) progress.cases[caseId] = { solved: {}, finaleDone: false };
+    if (!progress.cases[caseId].solved) progress.cases[caseId].solved = {};
+    return progress.cases[caseId];
+  }
+
+  // Kid-friendly normalizace odpovědí: malá písmena, bez diakritiky,
+  // bez mezer a interpunkce.
+  function normAnswer(s) {
+    return String(s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function answerMatches(task, given) {
+    var g = normAnswer(given);
+    if (!g) return false;
+    if (normAnswer(task.answer) === g) return true;
+    return (task.answer_alt || []).some(function (a) { return normAnswer(a) === g; });
+  }
+
+  function dadMode() {
+    try { return localStorage.getItem(DAD_MODE_KEY) === "1"; } catch (e) { return false; }
+  }
+
+  function renderCaseButton(trip) {
+    var btn = el("case-btn");
+    var c = caseForTrip(trip.id);
+    if (!c) { btn.hidden = true; return; }
+    var cp = progress.cases[c.id];
+    btn.hidden = false;
+    if (cp && cp.finaleDone) btn.textContent = "Případ uzavřen ✓ (otevřít znovu)";
+    else if (cp && Object.keys(cp.solved || {}).length) btn.textContent = "Pokračovat v případu";
+    else btn.textContent = "Zahájit případ: " + c.intro.title;
+  }
+
+  function openCase(c) {
+    caseState.caseDef = c;
+    var cp = caseProg(c.id);
+    var next = (c.checkpoints || []).findIndex(function (k) { return !cp.solved[k.id] || !cp.solved[k.id].done; });
+    if (cp.finaleDone) { caseState.view = "done"; caseState.cpIndex = c.checkpoints.length - 1; }
+    else if (next === -1) { caseState.view = "finale"; caseState.cpIndex = c.checkpoints.length - 1; }
+    else if (next === 0) { caseState.view = "intro"; caseState.cpIndex = 0; }
+    else { caseState.view = "transit"; caseState.cpIndex = next; }
+    caseState.attempts = 0;
+    el("case-return").hidden = true;
+    el("case-mode").hidden = false;
+    renderCase();
+  }
+
+  function closeCase(finished) {
+    stopRadar();
+    el("case-mode").hidden = true;
+    // rozehraný případ: plovoucí návrat, mapa je jen pomocník
+    el("case-return").hidden = !!finished || !caseState.caseDef ||
+      (progress.cases[caseState.caseDef.id] || {}).finaleDone;
+  }
+
+  el("case-close").addEventListener("click", function () { closeCase(false); });
+  el("case-return").addEventListener("click", function () {
+    if (caseState.caseDef) openCase(caseState.caseDef);
+  });
+  el("case-btn").addEventListener("click", function () {
+    var c = caseForTrip(state.current);
+    if (c) openCase(c);
+  });
+
+  // ---- radar (jen vzdálenost, bez kompasu)
+
+  function stopRadar() {
+    if (caseState.watchId != null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(caseState.watchId);
+    }
+    caseState.watchId = null;
+    if (caseState.simTimer) { clearInterval(caseState.simTimer); caseState.simTimer = null; }
+  }
+
+  function startRadar(cp) {
+    stopRadar();
+    caseState.lastDist = null;
+    if (!navigator.geolocation) {
+      setRadarStatus("GPS tu není. Použij „Jsem tady i bez GPS“.");
+      return;
+    }
+    caseState.watchId = navigator.geolocation.watchPosition(
+      function (pos) {
+        var d = haversineKm([pos.coords.latitude, pos.coords.longitude], [cp.lat, cp.lng]) * 1000;
+        updateRadar(d, cp);
+      },
+      function () {
+        setRadarStatus("GPS mlčí (nepovolená nebo bez signálu). Použij „Jsem tady i bez GPS“.");
+      },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
+    );
+  }
+
+  function setRadarStatus(text) {
+    var s = el("radar-status");
+    if (s) s.textContent = text;
+  }
+
+  function updateRadar(distM, cp) {
+    caseState.lastDist = distM;
+    var numEl = el("radar-dist");
+    var frame = el("radar-frame");
+    var goBtn = el("case-checkin");
+    if (!numEl) return;
+    numEl.textContent = distM >= 1000 ? (distM / 1000).toFixed(1) + " km" : Math.round(distM) + " m";
+    var threshold = cp.threshold_m || 35;
+    var inZone = distM <= threshold;
+    frame.classList.toggle("zone", inZone);
+    // puls zrychluje s blížením (2 s daleko → 0.4 s u cíle)
+    var dur = Math.max(0.4, Math.min(2, distM / 100));
+    frame.style.animationDuration = dur + "s";
+    goBtn.disabled = !inZone;
+    setRadarStatus(inZone ? "Jsi na místě. Stopa je na dosah." : "Přibliž se k místu, pásmo je " + threshold + " m.");
+  }
+
+  // Táta-režim: simulace příchodu bez chození (ladění engine od stolu).
+  // Odpočet je řízený časem, ne počtem tiků — throttling timerů ve webview
+  // zpomalí jen překreslování, ne dobu příchodu (~3 s).
+  function simulateArrival(cp) {
+    if (caseState.simTimer) clearInterval(caseState.simTimer);
+    var start = caseState.lastDist != null ? Math.max(caseState.lastDist, 120) : 250;
+    var t0 = Date.now();
+    caseState.simTimer = setInterval(function () {
+      var t = (Date.now() - t0) / 1000;
+      var d = Math.max(8, start * Math.pow(0.2, t / 1.2));
+      updateRadar(d, cp);
+      if (d <= 8) { clearInterval(caseState.simTimer); caseState.simTimer = null; }
+    }, 120);
+  }
+
+  // ---- vykreslení obrazovek případu
+
+  function renderCase() {
+    var c = caseState.caseDef;
+    if (!c) return;
+    var box = el("case-view");
+    var cp = c.checkpoints[caseState.cpIndex];
+    var prog = caseProg(c.id);
+    var total = c.checkpoints.length;
+    stopRadar();
+
+    if (caseState.view === "intro") {
+      box.innerHTML =
+        '<div class="micro-label">Nový případ</div>' +
+        '<h2 class="case-title">' + c.intro.title + "</h2>" +
+        '<p class="case-story">' + c.intro.story + "</p>" +
+        '<button type="button" class="case-cta" id="case-go">Vydat se po stopě</button>';
+      el("case-go").addEventListener("click", function () {
+        caseState.view = "transit";
+        renderCase();
+      });
+
+    } else if (caseState.view === "transit") {
+      box.innerHTML =
+        '<div class="micro-label">Stopa ' + (caseState.cpIndex + 1) + " z " + total + "</div>" +
+        '<p class="case-story">' + cp.transit_hint + "</p>" +
+        '<div id="radar-frame"><div id="radar-dist">…</div><div class="radar-sub">k místu</div></div>' +
+        '<p class="note" id="radar-status">Hledám signál…</p>' +
+        '<button type="button" class="case-cta" id="case-checkin" disabled>Jsem na místě</button>' +
+        (dadMode() ? '<button type="button" class="ghost-btn case-sim" id="case-sim">Simulovat příchod (táta-režim)</button>' : "") +
+        '<div class="case-links">' +
+        '<button type="button" class="case-link" id="case-manual">Jsem tady i bez GPS</button>' +
+        '<button type="button" class="case-link" id="case-showmap">Zobrazit mapu</button>' +
+        "</div>";
+      function checkin() {
+        stopRadar();
+        caseState.view = "task";
+        caseState.attempts = 0;
+        renderCase();
+      }
+      el("case-checkin").addEventListener("click", checkin);
+      el("case-manual").addEventListener("click", checkin);
+      el("case-showmap").addEventListener("click", function () { closeCase(false); });
+      if (dadMode()) el("case-sim").addEventListener("click", function () { simulateArrival(cp); });
+      startRadar(cp);
+
+    } else if (caseState.view === "task") {
+      box.innerHTML =
+        '<div class="micro-label">Šifra ' + (caseState.cpIndex + 1) + " z " + total + "</div>" +
+        '<p class="case-story">' + cp.task.prompt + "</p>" +
+        (cp.task.image ? '<img class="case-img" src="' + cp.task.image + '" alt="">' : "") +
+        '<input type="text" id="case-answer" autocomplete="off" autocapitalize="off" placeholder="Tvoje odpověď">' +
+        '<p class="note case-wrong" id="case-feedback" hidden>Tudy ne. Zkus to znovu.</p>' +
+        '<div class="case-hint" id="case-hint" hidden><strong>Nápověda:</strong> ' + cp.task.hint + "</div>" +
+        '<button type="button" class="case-cta" id="case-submit">Odpovědět</button>' +
+        '<div class="case-links"><button type="button" class="case-link" id="case-skip" hidden>Přeskočit úkol (bez XP)</button></div>';
+      function solveCp(skipped) {
+        var prog2 = caseProg(c.id);
+        prog2.solved[cp.id] = { done: true, skipped: !!skipped };
+        afterProgressChange();
+        caseState.view = "reward";
+        renderCase();
+      }
+      el("case-submit").addEventListener("click", function () {
+        if (answerMatches(cp.task, el("case-answer").value)) { solveCp(false); return; }
+        caseState.attempts++;
+        el("case-feedback").hidden = false;
+        if (caseState.attempts >= 2 && cp.task.hint) el("case-hint").hidden = false;
+        if (caseState.attempts >= 3) el("case-skip").hidden = false;
+      });
+      el("case-skip").addEventListener("click", function () { solveCp(true); });
+
+    } else if (caseState.view === "reward") {
+      var wasSkipped = prog.solved[cp.id] && prog.solved[cp.id].skipped;
+      var last = caseState.cpIndex >= total - 1;
+      box.innerHTML =
+        '<div class="micro-label">Útržek příběhu</div>' +
+        '<div class="case-fragment">' + cp.reward.fragment + "</div>" +
+        '<p class="case-xp">' + (wasSkipped ? "Bez XP (přeskočeno), ale stopa drží." : "+" + (cp.reward.xp || 0) + " XP") + "</p>" +
+        '<button type="button" class="case-cta" id="case-next">' +
+        (last ? "Ke složení klíče" : "Sledovat další stopu") + "</button>";
+      el("case-next").addEventListener("click", function () {
+        if (last) { caseState.view = "finale"; }
+        else { caseState.cpIndex++; caseState.view = "transit"; }
+        caseState.attempts = 0;
+        renderCase();
+      });
+
+    } else if (caseState.view === "finale") {
+      box.innerHTML =
+        '<div class="micro-label">Složení klíče</div>' +
+        '<p class="case-story">' + c.finale.assembly_prompt + "</p>" +
+        '<div class="case-fragments-recap">' +
+        c.checkpoints.map(function (k) { return '<div class="case-fragment small">' + k.reward.fragment + "</div>"; }).join("") +
+        "</div>" +
+        '<input type="text" id="case-code" autocomplete="off" autocapitalize="off" placeholder="Kód">' +
+        '<p class="note case-wrong" id="case-feedback" hidden>Klíč nesedí. Podívej se na útržky ještě jednou.</p>' +
+        '<button type="button" class="case-cta" id="case-code-submit">Zkusit kód</button>' +
+        '<div class="case-links"><button type="button" class="case-link" id="case-reveal" hidden>Odhalit rozuzlení</button></div>';
+      function finish() {
+        caseProg(c.id).finaleDone = true;
+        afterProgressChange();
+        caseState.view = "done";
+        renderCase();
+      }
+      el("case-code-submit").addEventListener("click", function () {
+        if (normAnswer(el("case-code").value) === normAnswer(c.finale.code)) { finish(); return; }
+        caseState.attempts++;
+        el("case-feedback").hidden = false;
+        if (caseState.attempts >= 3) el("case-reveal").hidden = false;
+      });
+      el("case-reveal").addEventListener("click", finish);
+
+    } else if (caseState.view === "done") {
+      box.innerHTML =
+        '<div class="micro-label">Případ uzavřen</div>' +
+        '<h2 class="case-title">' + c.intro.title + "</h2>" +
+        '<p class="case-story">' + c.finale.resolution + "</p>" +
+        '<button type="button" class="case-cta" id="case-finish">Zavřít případ</button>';
+      el("case-finish").addEventListener("click", function () {
+        closeCase(true);
+        renderCaseButton(state.trips.find(function (t) { return t.id === state.current; }) || {});
+      });
+    }
+  }
+
+  // finále → odznak z dat (badge_id), reuse existující police a oslavy
+  function awardCaseBadges() {
+    (state.cases || []).forEach(function (c) {
+      var b = c.finale && c.finale.badge_id &&
+        state.badges.find(function (x) { return x.id === c.finale.badge_id; });
+      if (!b) return;
+      var cp = progress.cases[c.id];
+      if (cp && cp.finaleDone && !progress.badges[b.id] && b.condition.type !== "auto") {
+        progress.badges[b.id] = true;
+        celebrate(b.icon, "Odznak: " + b.name, b.description);
+      }
+    });
   }
 
   // ------------------------------------------------ herní vrstva: onboarding
@@ -1147,11 +1474,17 @@
     fetch("data/trips.json").then(function (r) { return r.json(); }),
     fetch("data/stops.json").then(function (r) { return r.json(); }),
     fetch("data/badges.json").then(function (r) { return r.json(); }),
+    // případy jsou volitelné: chybějící/rozbitý cases.json = žádný story
+    // mode, appka jede dál (čistá odebratelnost)
+    fetch("data/cases.json")
+      .then(function (r) { return r.ok ? r.json() : { cases: [] }; })
+      .catch(function () { return { cases: [] }; }),
   ])
     .then(function (res) {
       state.trips = res[0].trips;
       state.stops = res[1];
       state.badges = res[2].badges || [];
+      state.cases = res[3].cases || [];
 
       renderXp();
 

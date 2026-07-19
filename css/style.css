@@ -1037,6 +1037,190 @@ main {
 #celebrate.show .celebrate-card { animation: celebrate-in 0.35s ease; }
 #celebrate.show .celebrate-icon::after { animation: celebrate-ring 0.9s ease 0.15s forwards; }
 
+/* ---- story mode: detektivní případ ---- */
+#case-btn {
+  display: block;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#case-mode { align-items: stretch; z-index: 2500; }
+
+.case-card {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--bg);
+  padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.case-card .modal-close { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; }
+
+.case-title { font-size: 26px; font-weight: 700; margin: 0 0 10px; }
+
+.case-story { font-size: 15px; line-height: 1.55; color: var(--text-soft); margin: 0 0 18px; }
+
+.case-cta {
+  width: 100%;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 26px;
+  cursor: pointer;
+  margin-top: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.case-cta:disabled {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* radar: velké číslo + pulsující rámeček, v pásmu zežloutne */
+#radar-frame {
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 26px 16px;
+  text-align: center;
+  margin: 6px 0 10px;
+  animation: radar-pulse 2s ease-in-out infinite;
+}
+
+#radar-frame.zone {
+  border-color: var(--accent);
+  animation: none;
+}
+
+@keyframes radar-pulse {
+  0%, 100% { border-color: var(--border); }
+  50% { border-color: #555555; }
+}
+
+#radar-dist { font-size: 56px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+
+.radar-sub {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.case-sim { display: block; width: 100%; margin-top: 10px; }
+
+.case-links { display: flex; justify-content: center; gap: 18px; margin-top: 14px; }
+
+.case-link {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#case-answer, #case-code {
+  width: 100%;
+  font-family: inherit;
+  font-size: 17px;
+  color: var(--text);
+  background: var(--bg-darker);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  margin-top: 4px;
+}
+
+#case-answer:focus, #case-code:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+
+.case-wrong { color: #ff9d9d; }
+
+.case-hint {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  margin-top: 10px;
+}
+
+.case-img { width: 100%; border-radius: 12px; margin: 10px 0; }
+
+.case-fragment {
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.case-fragment.small { font-size: 12px; color: var(--text-soft); padding: 8px 12px; margin-bottom: 6px; }
+
+.case-fragments-recap { margin-bottom: 10px; }
+
+.case-xp { font-size: 15px; font-weight: 700; color: var(--accent); margin: 12px 0 0; }
+
+#case-return {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--sheet-peek) + 14px);
+  z-index: 900;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dad-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dad-toggle input { accent-color: var(--accent); }
+
+@media (min-width: 900px) {
+  #case-return { bottom: 24px; left: 24px; transform: none; }
+  .case-card { border-radius: 16px; margin: 16px auto; min-height: calc(100% - 32px); }
+}
+
 /* navigátor */
 #nav-mode { align-items: stretch; }
 

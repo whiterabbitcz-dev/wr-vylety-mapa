@@ -157,3 +157,26 @@ takto (žádný zásah do kódu):
 
 Volitelná per-mise pole zavedená kvůli pěší misi (obecná, ne vázaná na id):
 `tempo_kmh` (default 11 pro cyklo) a `cas_label` (default „Čistá jízda").
+
+## Story mode (detektivní případy)
+
+Volitelná příběhová vrstva nad misí: zápletka → radar (jen vzdálenost z GPS,
+bez kompasu) → check-in (pásmo `threshold_m`, vždy i ruční „Jsem tady i bez
+GPS") → šifra (hint po 2 špatných pokusech, přeskočení po 3, bez XP) →
+útržek příběhu + XP → finále (složení kódu) → rozuzlení + odznak.
+
+Data v **`data/cases.json`** (`cases: [...]`), mise bez případu jedou beze
+změny. Schéma případu: `id`, `mission_ref` (id mise), `intro {title, story}`,
+`checkpoints [{id, lat, lng, transit_hint, threshold_m, task {prompt, image?,
+answer, answer_alt[], hint}, reward {fragment, xp}}]`, `finale
+{assembly_prompt, code, resolution, badge_id?}`. Odpovědi se normalizují
+(malá písmena, bez diakritiky, mezer a interpunkce). `badge_id` může mířit
+na auto odznak s metrikou `cases_done` (počet uzavřených případů).
+
+Smazání případu = smazat objekt z `cases.json` (nebo celý soubor): appka
+jede dál, tlačítko případu zmizí, uložený postup smazaného případu se
+ignoruje (XP ani metriky ho nepočítají).
+
+Táta-režim (ladění od stolu): přepínač v nastavení (Skóre a odznaky),
+default vypnutý — na radaru přidá „Simulovat příchod", který odpočítá
+vzdálenost bez chození. Postup případů je součástí zálohy/obnovy i resetu.

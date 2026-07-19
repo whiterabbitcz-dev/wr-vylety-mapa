@@ -45,6 +45,17 @@
       }
     },
     {
+      "id": "prvni-pripad",
+      "name": "První případ",
+      "description": "Vyřeš svůj první detektivní případ.",
+      "icon": "🕵️",
+      "condition": {
+        "type": "auto",
+        "metric": "cases_done",
+        "gte": 1
+      }
+    },
+    {
       "id": "prezivsi-deste",
       "name": "Přeživší deště",
       "description": "Jela jsem, i když pršelo.",
