@@ -28,6 +28,10 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      # Cache-busting: __BUILD__ v index.html → krátké SHA commitu. Každý
+      # deploy tak má nová URL assetů/dat a klienti nečekají na max-age=600.
+      - name: Stamp build version
+        run: sed -i "s/__BUILD__/${GITHUB_SHA::7}/g" index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .

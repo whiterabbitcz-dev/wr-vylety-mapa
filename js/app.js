@@ -159,6 +159,15 @@
 
   function el(id) { return document.getElementById(id); }
 
+  // Cache-busting datových souborů: build stamp vkládá Pages workflow do
+  // window.BUILD — každý deploy má nová URL a stará cache (max-age=600,
+  // iOS Safari) se ignoruje. Nenahrazený literál __BUILD__ (lokální vývoj,
+  // selhání sedu) se přeskočí a jede se bez verze jako dřív.
+  function dataUrl(path) {
+    var b = window.BUILD;
+    return b && b.indexOf("__") !== 0 ? path + "?v=" + b : path;
+  }
+
   // Vzdálenost dvou bodů [lat, lng] v km (haversine).
   function haversineKm(a, b) {
     var rad = function (d) { return (d * Math.PI) / 180; };
@@ -759,7 +768,7 @@
     var visitsMin = stops.reduce(function (a, s) { return a + (s.prohlidka_min || 0); }, 0);
 
     var gpxUrl = state.variantAlt && trip.varianta_alt ? trip.varianta_alt.gpx : trip.gpx;
-    fetch(gpxUrl)
+    fetch(dataUrl(gpxUrl))
       .then(function (r) { return r.ok ? r.text() : null; })
       .then(function (gpxText) {
         var pts = gpxText ? parseGpx(gpxText) : null;
@@ -1483,12 +1492,12 @@
   // ---------------------------------------------------------------- start
 
   Promise.all([
-    fetch("data/trips.json").then(function (r) { return r.json(); }),
-    fetch("data/stops.json").then(function (r) { return r.json(); }),
-    fetch("data/badges.json").then(function (r) { return r.json(); }),
+    fetch(dataUrl("data/trips.json")).then(function (r) { return r.json(); }),
+    fetch(dataUrl("data/stops.json")).then(function (r) { return r.json(); }),
+    fetch(dataUrl("data/badges.json")).then(function (r) { return r.json(); }),
     // případy jsou volitelné: chybějící/rozbitý cases.json = žádný story
     // mode, appka jede dál (čistá odebratelnost)
-    fetch("data/cases.json")
+    fetch(dataUrl("data/cases.json"))
       .then(function (r) { return r.ok ? r.json() : { cases: [] }; })
       .catch(function () { return { cases: [] }; }),
   ])
