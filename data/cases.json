@@ -1,83 +1,74 @@
 {
   "cases": [
     {
-      "id": "case-ztraceny-cas",
+      "id": "case-ztracene-hodinky",
       "mission_ref": "trip0",
       "intro": {
-        "title": "Případ ztraceného času",
-        "story": "Nad Letnou se zastavil čas. Velká ručička tiká, ale hodiny nikde. Bílý králík nechal v sadech tři stopy a vzkaz: „Kdo poskládá roky, najde klíč.“ Vezmeš ten případ?"
+        "title": "Ztracené hodinky",
+        "story": "Bílý králík má zase zpoždění. Tentokrát to přehnal a ztratil svoje kapesní hodinky přímo tady na Letné, mezi třemi starými stroji. U každého nechal jedno číslo, ale schoval ho tak, že ho najdeš, jen když tam opravdu budeš stát. Slož všechna tři a zjistíš, v kolik se hodinky zastavily a kam je králík odložil. Následuj ho."
       },
       "checkpoints": [
         {
           "id": "cp-metronom",
           "lat": 50.094744,
           "lng": 14.41594,
-          "transit_hint": "Jdi k velké ručičce, co tiká nad řekou.",
+          "transit_hint": "Vyjdi na velkou pláň nad řekou, kde se pomalu houpe rudá ručička.",
           "threshold_m": 35,
           "task": {
-            "prompt": "Stojíš pod ručičkou, která měří čas. Než začala tikat, stál tady žulový obr, největší v Evropě. Čí to byl pomník? (jedno jméno)",
-            "answer": "stalin",
-            "answer_alt": [
-              "stalinuv pomnik",
-              "pomnik stalina",
-              "josif stalin"
-            ],
-            "hint": "Pomůže ti tabule u vyhlídky. Byl to pomník sovětského vůdce."
+            "prompt": "Ke králíkovu prvnímu číslu vede cesta pod nohama. Spočítej všechny velké kamenné schody, které vedou nahoru k metronomu, odspoda až k plošině. Kolik jich je? (Když ti vyjde víc než jedna číslice, sečti je dohromady, třeba 62 → 6+2 → 8.)",
+            "answer": "",
+            "answer_alt": [],
+            "hint": "Počítej jen velké stupně, ne obrubníky. A pak číslice sečti.",
+            "todo": "zamknout na dry runu (ciferný součet počtu schodů)"
           },
           "reward": {
-            "fragment": "Útržek 1: „Čas tady tiká od roku 1991, kdy se ručička poprvé pohnula.“ Zapamatuj si poslední číslici.",
-            "xp": 20
+            "fragment": "Na víčku hodinek se rozsvítilo první číslo. Druhý stroj není hodiny, ale zámeček z tmavého kovu.",
+            "xp": 30
           }
         },
         {
           "id": "cp-pavilon",
           "lat": 50.093677,
           "lng": 14.412615,
-          "transit_hint": "Sejdi k pavilonu, co se třpytí nad schody k řece.",
+          "transit_hint": "Za rudou ručičkou stojí ozdobný zámeček z litiny s vyhlídkou na mosty.",
           "threshold_m": 35,
           "task": {
-            "prompt": "Celý pavilon je odlitý z jednoho kovu. Z jakého? (jedno slovo)",
-            "answer": "litina",
-            "answer_alt": [
-              "z litiny",
-              "litiny",
-              "zelezo"
-            ],
-            "hint": "Není to zlato ani stříbro. Odlily ho železárny knížete z Hanau."
+            "prompt": "Pavilon je celý slitý ze železa a někde na něm je vyrytý rok, kdy vznikl. Najdi ten letopočet a vezmi jeho POSLEDNÍ číslici. To je králíkovo druhé číslo.",
+            "answer": "",
+            "answer_alt": [],
+            "hint": "Hledej u vstupu nebo na štítu. Číslo bude začínat 18…",
+            "todo": "zamknout na dry runu (poslední číslice vyrytého roku)"
           },
           "reward": {
-            "fragment": "Útržek 2: „Pavilon se poprvé blýskl na velké výstavě v roce 1891 a od té doby drží stráž.“ Zapamatuj si poslední číslici.",
-            "xp": 20
+            "fragment": "Druhé číslo svítí. Poslední se schovává tam, kde se přes sto let pořád dokola točí koně.",
+            "xp": 30
           }
         },
         {
           "id": "cp-kolotoc",
           "lat": 50.09664,
           "lng": 14.425187,
-          "transit_hint": "Najdi místo, kde se v sadech točí koně.",
+          "transit_hint": "Poslední stroj se točí dokola. Dřevění koně, hudba, přes sto let starý.",
           "threshold_m": 35,
           "task": {
-            "prompt": "Koně na kolotoči nejsou jen tak ledajací. Čím jsou potažení? (jedno slovo)",
-            "answer": "kuzi",
-            "answer_alt": [
-              "kuze",
-              "konskou kuzi",
-              "konska kuze",
-              "pravou kuzi"
-            ],
-            "hint": "Je pravá a je z opravdových koní."
+            "prompt": "Králíkovo poslední číslo hlídají koně. Spočítej, kolik koní na kolotoči je. (Zase: když vyjde víc číslic, sečti je, třeba 19 → 1+9 → 10 → 1+0 → 1.)",
+            "answer": "",
+            "answer_alt": [],
+            "hint": "Obejdi celý kolotoč a počítej i ty vzadu. Pak číslice sečti.",
+            "todo": "zamknout na dry runu (ciferný součet počtu koní)"
           },
           "reward": {
-            "fragment": "Útržek 3: „Koně se točí od roku 1892 a pamatují víc, než přiznají.“ Zapamatuj si poslední číslici.",
-            "xp": 20
+            "fragment": "Máš všechna tři čísla. Slož je za sebou a přečti čas.",
+            "xp": 40
           }
         }
       ],
       "finale": {
-        "assembly_prompt": "Tři útržky, tři roky: 1991, 1891 a 1892. Klíč je z jejich posledních číslic, v pořadí stop. Jaký je kód?",
-        "code": "112",
-        "resolution": "Klíč sedí a čas se zase rozběhl. Bílý králík nechal poblíž poslední překvapení. Zeptej se táty, kde je schované…",
-        "badge_id": "prvni-pripad"
+        "assembly_prompt": "Slož tři čísla za sebou. Vyjde ti čas, hodina a minuty, na kterých se králíkovy hodinky zastavily. Zadej ho.",
+        "code": "",
+        "todo": "zamknout po dry runu (tři číslice ve tvaru H:MM)",
+        "resolution": "To je čas, kdy králík utíkal na vlak a hodinky ve spěchu zapomněl, tam, kde se pořád něco točí. Ale ty jsi je našla, detektive. Případ uzavřen. Teď máš právo na odměnu, běž si pro zmrzlinu.",
+        "badge_id": "zmrzlinova-kralovna"
       }
     }
   ]

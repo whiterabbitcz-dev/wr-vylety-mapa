@@ -1,0 +1,80 @@
+{
+  "id": "case-ztraceny-cas",
+  "mission_ref": "trip0",
+  "intro": {
+    "title": "Případ ztraceného času",
+    "story": "Nad Letnou se zastavil čas. Velká ručička tiká, ale hodiny nikde. Bílý králík nechal v sadech tři stopy a vzkaz: „Kdo poskládá roky, najde klíč.“ Vezmeš ten případ?"
+  },
+  "checkpoints": [
+    {
+      "id": "cp-metronom",
+      "lat": 50.094744,
+      "lng": 14.41594,
+      "transit_hint": "Jdi k velké ručičce, co tiká nad řekou.",
+      "threshold_m": 35,
+      "task": {
+        "prompt": "Stojíš pod ručičkou, která měří čas. Než začala tikat, stál tady žulový obr, největší v Evropě. Čí to byl pomník? (jedno jméno)",
+        "answer": "stalin",
+        "answer_alt": [
+          "stalinuv pomnik",
+          "pomnik stalina",
+          "josif stalin"
+        ],
+        "hint": "Pomůže ti tabule u vyhlídky. Byl to pomník sovětského vůdce."
+      },
+      "reward": {
+        "fragment": "Útržek 1: „Čas tady tiká od roku 1991, kdy se ručička poprvé pohnula.“ Zapamatuj si poslední číslici.",
+        "xp": 20
+      }
+    },
+    {
+      "id": "cp-pavilon",
+      "lat": 50.093677,
+      "lng": 14.412615,
+      "transit_hint": "Sejdi k pavilonu, co se třpytí nad schody k řece.",
+      "threshold_m": 35,
+      "task": {
+        "prompt": "Celý pavilon je odlitý z jednoho kovu. Z jakého? (jedno slovo)",
+        "answer": "litina",
+        "answer_alt": [
+          "z litiny",
+          "litiny",
+          "zelezo"
+        ],
+        "hint": "Není to zlato ani stříbro. Odlily ho železárny knížete z Hanau."
+      },
+      "reward": {
+        "fragment": "Útržek 2: „Pavilon se poprvé blýskl na velké výstavě v roce 1891 a od té doby drží stráž.“ Zapamatuj si poslední číslici.",
+        "xp": 20
+      }
+    },
+    {
+      "id": "cp-kolotoc",
+      "lat": 50.09664,
+      "lng": 14.425187,
+      "transit_hint": "Najdi místo, kde se v sadech točí koně.",
+      "threshold_m": 35,
+      "task": {
+        "prompt": "Koně na kolotoči nejsou jen tak ledajací. Čím jsou potažení? (jedno slovo)",
+        "answer": "kuzi",
+        "answer_alt": [
+          "kuze",
+          "konskou kuzi",
+          "konska kuze",
+          "pravou kuzi"
+        ],
+        "hint": "Je pravá a je z opravdových koní."
+      },
+      "reward": {
+        "fragment": "Útržek 3: „Koně se točí od roku 1892 a pamatují víc, než přiznají.“ Zapamatuj si poslední číslici.",
+        "xp": 20
+      }
+    }
+  ],
+  "finale": {
+    "assembly_prompt": "Tři útržky, tři roky: 1991, 1891 a 1892. Klíč je z jejich posledních číslic, v pořadí stop. Jaký je kód?",
+    "code": "112",
+    "resolution": "Klíč sedí a čas se zase rozběhl. Bílý králík nechal poblíž poslední překvapení. Zeptej se táty, kde je schované…",
+    "badge_id": "prvni-pripad"
+  }
+}
