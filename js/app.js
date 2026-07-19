@@ -216,9 +216,15 @@
     return Math.round(gain);
   }
 
+  // Tempo mise: cyklo default 11 km/h, pěší mise si nesou vlastní tempo
+  // v datech (tempo_kmh) — žádná logika vázaná na konkrétní id mise.
+  function tripTempo(trip) {
+    return (trip && trip.tempo_kmh) || RIDE_SPEED_KMH;
+  }
+
   // Úseky mezi zastávkami (à la Mapy.com „3.1 km · 12 min"): z GPX kumulativní
   // vzdálenost + převýšení v úseku, čas stejným modelem jako celek.
-  function buildSegments(pts, stops) {
+  function buildSegments(pts, stops, tempoKmh) {
     var cum = [0];
     for (var i = 1; i < pts.length; i++) {
       cum.push(cum[i - 1] + haversineKm([pts[i - 1][0], pts[i - 1][1]], [pts[i][0], pts[i][1]]));
@@ -237,7 +243,7 @@
       var kmA = stopKm(stops[s]), kmB = stopKm(stops[s + 1]);
       if (kmA == null || kmB == null || kmB <= kmA) { segs.push(null); continue; }
       var segKm = kmB - kmA;
-      var min = (segKm / RIDE_SPEED_KMH) * 60;
+      var min = (segKm / (tempoKmh || RIDE_SPEED_KMH)) * 60;
       if (smooth) {
         var gain = 0;
         for (var j = idxAtKm(kmA) + 1; j <= idxAtKm(kmB); j++) {
@@ -378,7 +384,13 @@
   }
 
   function metricValue(metric) {
-    var missions = Object.keys(progress.missions).filter(function (k) { return progress.missions[k].done; });
+    // sirotci: postup mise, která už v datech není (např. smazaná cvičná
+    // mise), se ignoruje — nesmí přispívat do metrik ani nic shodit
+    var known = {};
+    state.trips.forEach(function (t) { known[t.id] = true; });
+    var missions = Object.keys(progress.missions).filter(function (k) {
+      return known[k] && progress.missions[k].done;
+    });
     if (metric === "missions_done") return missions.length;
     if (metric === "km_total") return missions.reduce(function (a, k) { return a + (progress.missions[k].km || 0); }, 0);
     if (metric === "climb_total") return missions.reduce(function (a, k) { return a + (progress.missions[k].gain || 0); }, 0);
@@ -773,8 +785,9 @@
     // snapshot pro auto odznaky (ukládá se při dokončení mise)
     state.lastStats[trip.id] = { km: Math.round(km * 10) / 10, gain: gain || 0 };
 
-    // Model času: tempo 11 km/h na rovině + ~1 min na každých 10 m převýšení.
-    var rideMin = (km / RIDE_SPEED_KMH) * 60 + (gain != null ? (gain / 10) * CLIMB_MIN_PER_10M : 0);
+    // Model času: tempo dle mise (cyklo 11 km/h, pěší z dat) + ~1 min
+    // na každých 10 m převýšení.
+    var rideMin = (km / tripTempo(trip)) * 60 + (gain != null ? (gain / 10) * CLIMB_MIN_PER_10M : 0);
     var totalMin = rideMin + visitsMin;
 
     // Obtížnost: meter 1/2/3 (délka a převýšení po jednom bodu) + label.
@@ -808,7 +821,7 @@
       { icon: ICONS.mountain, label: "Převýšení", value: gain != null ? gain + " m" : "…" },
       {
         icon: ICONS.clock,
-        label: "Čistá jízda",
+        label: trip.cas_label || "Čistá jízda",
         value: fmtTime(rideMin),
         sub: "+ prohlídky, celkem " + fmtTime(totalMin),
       },
@@ -832,7 +845,7 @@
     }
 
     // úsekové vzdálenosti mezi zastávkami → seznam znovu i s mezikusy
-    renderStopsList(stops, buildSegments(pts, stops));
+    renderStopsList(stops, buildSegments(pts, stops, tripTempo(trip)));
 
     // Výškový profil — leaflet-elevation vykreslí trasu i graf;
     // tap/hover na profilu ukáže odpovídající bod na mapě.
@@ -1047,7 +1060,7 @@
   function showOnboarding() {
     var steps = el("onboard-steps");
     steps.innerHTML =
-      "<li>" + ICONS.mapFold + "<div><strong>Vyber misi</strong><span>Tři výpravy za technickými památkami.</span></div></li>" +
+      "<li>" + ICONS.mapFold + "<div><strong>Vyber misi</strong><span>Výpravy za technickými památkami.</span></div></li>" +
       "<li>" + ICONS.bike + "<div><strong>Šlápni do pedálů</strong><span>Veď tátu od zastávky k zastávce.</span></div></li>" +
       "<li>" + ICONS.trophy + "<div><strong>Sbírej úkoly, XP a odznaky</strong><span>Foto-hledačka, králík a police trofejí.</span></div></li>";
     el("onboarding").hidden = false;

@@ -215,5 +215,37 @@
     "prohlidka_min": 0,
     "coords_overit": false,
     "id": "trip3-senohraby-zel-stanice-cil"
+  },
+  {
+    "trip": "trip0",
+    "name": "Metronom (Letná)",
+    "lat": 50.094744,
+    "lng": 14.41594,
+    "km": 0,
+    "popis": "Start cvičného okruhu, vyhlídka na Prahu a mosty.",
+    "prohlidka_min": 10,
+    "id": "trip0-metronom-letna",
+    "photo_spot": true
+  },
+  {
+    "trip": "trip0",
+    "name": "Hanavský pavilon",
+    "lat": 50.093677,
+    "lng": 14.412615,
+    "km": 0.3,
+    "popis": "Litinový pavilon postavený pro Jubilejní výstavu 1891.",
+    "prohlidka_min": 5,
+    "id": "trip0-hanavsky-pavilon"
+  },
+  {
+    "trip": "trip0",
+    "name": "Letenský kolotoč",
+    "lat": 50.09664,
+    "lng": 14.425187,
+    "km": 1.3,
+    "popis": "Historický kolotoč z roku 1892. Pozor: jede jen pátek až neděle 11:30 až 17:30 (květen až září).",
+    "prohlidka_min": 20,
+    "id": "trip0-letensky-kolotoc",
+    "photo_spot": true
   }
 ]

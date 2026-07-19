@@ -25,7 +25,8 @@ import { fileURLToPath } from "node:url";
 import { trips } from "./waypoints.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ORS_URL = "https://api.openrouteservice.org/v2/directions/cycling-regular/geojson";
+const orsUrl = (profile) =>
+  `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
 
 const API_KEY = process.env.ORS_API_KEY;
 if (!API_KEY) {
@@ -46,6 +47,7 @@ for (const t of selected) {
 // zastávek a filtr zastávek. Výlet 2 má dvě varianty: default (zkrácená,
 // bez zastávek s `varianta: "plna"`) a plná (všechny zastávky, km_plna).
 const ROUTES = {
+  trip0:      { trip: "trip0", gpx: "trip0.gpx",      kmField: "km",      label: " (pěšky)",      stopFilter: (s) => s.varianta !== "plna", profile: "foot-walking" },
   trip1:      { trip: "trip1", gpx: "trip1.gpx",      kmField: "km",      label: "",              stopFilter: (s) => s.varianta !== "plna" },
   trip2:      { trip: "trip2", gpx: "trip2.gpx",      kmField: "km",      label: "",              stopFilter: (s) => s.varianta !== "plna" },
   trip2_plna: { trip: "trip2", gpx: "trip2_plna.gpx", kmField: "km_plna", label: " (plná verze)", stopFilter: () => true },
@@ -150,7 +152,7 @@ for (const tripId of selected) {
   console.log(`\n═══ ${(meta?.nazev ?? tripId) + route.label} ═══`);
   console.log(`ORS request: ${waypoints.length} průjezdních bodů…`);
 
-  const res = await fetch(ORS_URL, {
+  const res = await fetch(orsUrl(route.profile || "cycling-regular"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -191,14 +193,15 @@ for (const tripId of selected) {
   for (let i = 1; i < coords.length; i++)
     cumKm.push(cumKm[i - 1] + haversineKm(coords[i - 1], coords[i]));
 
-  const rideMin = (km / RIDE_SPEED_KMH) * 60 + (gain / 10) * CLIMB_MIN_PER_10M;
+  const tempo = meta?.tempo_kmh || RIDE_SPEED_KMH; // pěší mise mají vlastní tempo v datech
+  const rideMin = (km / tempo) * 60 + (gain / 10) * CLIMB_MIN_PER_10M;
   const tripStops = stops.filter((s) => s.trip === route.trip && route.stopFilter(s));
   const visitsMin = tripStops.reduce((a, s) => a + (s.prohlidka_min || 0), 0);
 
   console.log(`✓ ${gpxPath}`);
   console.log(`  délka:      ${km.toFixed(1)} km`);
   console.log(`  převýšení:  ↑ ${gain} m`);
-  console.log(`  jízda:      ≈ ${fmtTime(rideMin)} (tempo ${RIDE_SPEED_KMH} km/h + kopce)`);
+  console.log(`  jízda:      ≈ ${fmtTime(rideMin)} (tempo ${tempo} km/h + kopce)`);
   console.log(`  s prohlídkami: ≈ ${fmtTime(rideMin + visitsMin)} (prohlídky ${fmtTime(visitsMin)})`);
   if (km > 25 || gain > 300) {
     console.log(`  ⚠ NÁROČNĚJŠÍ (limit 25 km / 300 m) — zkontroluj zkrácenou variantu v trips.json`);

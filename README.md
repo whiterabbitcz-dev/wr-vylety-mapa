@@ -141,3 +141,19 @@ Postup hráčky žije v localStorage (`wr-vylety-mapa.progress`,
 km/převýšení pro auto odznaky), odznaky, pozice navigátoru. XP se neukládá,
 počítá se vždy ze stavu. Záloha/obnova = JSON přes textarea v modalu
 Skóre a odznaky; tamtéž reset. PWA manifest → „přidat na plochu".
+
+## Mise 00 (dočasná cvičná, pěšky)
+
+Tréninková pěší mise po Letné na otestování hry. Je čistě datová a maže se
+takto (žádný zásah do kódu):
+
+1. `data/trips.json`: odstranit objekt s `"id": "trip0"`.
+2. `data/stops.json`: odstranit záznamy s `"trip": "trip0"`.
+3. Smazat `data/trip0.gpx` a blok `trip0` ve `scripts/waypoints.mjs`
+   + řádek `trip0` v ROUTES v `scripts/build_routes.mjs` (úklid tooling).
+4. Commit + push. Hotovo — appka jede dál, uložený postup smazané mise se
+   ignoruje (nepočítá se do XP ani metrik odznaků), onboarding počet misí
+   neuvádí.
+
+Volitelná per-mise pole zavedená kvůli pěší misi (obecná, ne vázaná na id):
+`tempo_kmh` (default 11 pro cyklo) a `cas_label` (default „Čistá jízda").

@@ -11,6 +11,16 @@
 // session) — sedí se stops.json. Formát: [lon, lat].
 
 export const trips = {
+  // ── Mise 00 — Cvičné kolečko (Letná, PĚŠKY, dočasná tréninková mise) ────
+  // Okruh: metronom → Hanavský pavilon → zpět sady → kolotoč → metronom.
+  // Po otestování appky se maže spolu s trip0 v trips.json/stops.json.
+  trip0: [
+    [14.415940, 50.094744], // metronom
+    [14.412615, 50.093677], // Hanavský pavilon
+    [14.425187, 50.096640], // Letenský kolotoč
+    [14.415940, 50.094744], // metronom (návrat)
+  ],
+
   // ── Výlet 1 — Zdymadlo Hořín (Polabí, rovina) ──────────────────────────
   // Okruh: Mělník žst → centrum → Vrázova vyhlídka (soutok) → most Josefa
   // Straky → zámecký park Hořín → zdymadlo → Vrbno → Zelčín (zoopark)
