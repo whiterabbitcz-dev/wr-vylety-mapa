@@ -10,40 +10,49 @@
       "znacene_trasy": "Vltavská č. 7 + Labská č. 2 / EuroVelo 7",
       "zkracena": "Jen Mělník → zdymadlo Hořín a zpět (cca 7 km): vyhlídka na soutok, park a plavební komora bez okruhu přes Lužec.",
       "mission_number": 1,
-      "mission_title": "Mise 1: Tajemství zdymadla",
-      "mission_subtitle": "Placeholder: podtitulek mise, dodá se s obsahem.",
+      "mission_title": "Mise 01: Výtah pro lodě",
+      "mission_subtitle": "Najdi místo, kde se řeka umí zvednout o dům výš.",
       "xp_value": 100,
       "scavenger": [
         {
           "id": "s1",
-          "text": "Placeholder: vyfoť loď v plavební komoře",
-          "icon": "📷"
+          "text": "Loď, hausbót nebo cokoli, co pluje po vodě",
+          "icon": "🛥️"
         },
         {
           "id": "s2",
-          "text": "Placeholder: vyfoť soutok Labe a Vltavy",
-          "icon": "📷"
+          "text": "Něco úplně žlutého (barva Bílého králíka)",
+          "icon": "🟡"
         },
         {
           "id": "s3",
-          "text": "Placeholder: vyfoť zvíře v zooparku Zelčín",
-          "icon": "📷"
+          "text": "Vinná réva nebo vinice (jsme ve víně)",
+          "icon": "🍇"
         },
         {
           "id": "s4",
-          "text": "Placeholder: vyfoť lávku v Lužci zespodu",
+          "text": "Vodní pták: labuť, volavka nebo aspoň drzá kachna",
+          "icon": "🦆"
+        },
+        {
+          "id": "s5",
+          "text": "Táta, jak zkoumá, jak zdymadlo funguje",
           "icon": "📷"
         }
       ],
-      "rabbit_hint": "Placeholder: vyfoť králíka u zdymadla (dodá se s obsahem).",
+      "rabbit_hint": "Vyfoť králíka na zábradlí plavební komory, jako by čekal, až ho voda vyveze nahoru.",
       "facts": [
         {
           "stop_id": "trip1-zdymadlo-horin-plavebni-komora",
-          "fact": "Placeholder: víš, že… fakt o zdymadle Hořín."
+          "fact": "Zdymadlo je vlastně výtah pro lodě. Napustí se vodou a loď se v komoře zvedne o víc než 8 metrů, aby obeplula mělký kus řeky. Tohle je z roku 1905 a je pořád funkční."
         },
         {
           "stop_id": "trip1-soutok-labe-a-vltavy-vyhlidka",
-          "fact": "Placeholder: víš, že… fakt o soutoku."
+          "fact": "U Mělníka se Vltava vlévá do Labe. Jenže Vltava je delší a nese víc vody, takže by se řeka správně měla jmenovat dál Vltava. Jméno si ale nechalo Labe."
+        },
+        {
+          "stop_id": "trip1-melnik-zel-stanice-start",
+          "fact": "Mělník je jedno z nejstarších vinařských měst u nás, réva se tu pěstuje přes tisíc let."
         }
       ]
     },
@@ -60,38 +69,57 @@
         "info": "Zobrazená je zkrácená verze: Mšeno → Lobeč a zpět, mírnější profil, vychází na vlak v 16:44.",
         "info_alt": "Zobrazená je plná verze pro zdatné: navíc Kokořínský důl, Pokličky a hrad Kokořín. Hlídejte čas, zpáteční vlak jede v 16:44.",
         "prepnout": "Přepnout na plnou verzi pro zdatné (Kokořínský důl, Pokličky, hrad)",
-        "prepnout_zpet": "Přepnout zpět na zkrácenou verzi (rodinný default)"
+        "prepnout_zpet": "Přepnout zpět na zkrácenou verzi (rodinný default)",
+        "xp_value": 300
       },
       "mission_number": 2,
-      "mission_title": "Mise 2: Parostrojní výprava",
-      "mission_subtitle": "Placeholder: podtitulek mise, dodá se s obsahem.",
+      "mission_title": "Mise 02: Tajemství staré páry",
+      "mission_subtitle": "Pivovar, co roztáčela pára, a skály jako pokličky na hrnec.",
       "xp_value": 150,
       "scavenger": [
         {
           "id": "s1",
-          "text": "Placeholder: vyfoť komín parostrojního pivovaru",
-          "icon": "📷"
+          "text": "Skála, co vypadá jako poklička",
+          "icon": "🪨"
         },
         {
           "id": "s2",
-          "text": "Placeholder: vyfoť vlak cyklovlaku",
-          "icon": "📷"
+          "text": "Turistická značka (zapamatuj si její barvu)",
+          "icon": "🚩"
         },
         {
           "id": "s3",
-          "text": "Placeholder: vyfoť skálu u trasy",
+          "text": "Něco úplně žlutého",
+          "icon": "🟡"
+        },
+        {
+          "id": "s4",
+          "text": "Něco starého a železného (páka, kolo, stroj)",
+          "icon": "⚙️"
+        },
+        {
+          "id": "s5",
+          "text": "Táta, jak funí do kopce",
           "icon": "📷"
         }
       ],
-      "rabbit_hint": "Placeholder: vyfoť králíka před pivovarem (dodá se s obsahem).",
+      "rabbit_hint": "Vyfoť králíka na sudu v pivovaru nebo nahoře na Pokličce, ať má výhled.",
       "facts": [
         {
           "stop_id": "trip2-pivovar-lobec-parostrojni",
-          "fact": "Placeholder: víš, že… fakt o pivovaru Lobeč."
+          "fact": "Tenhle pivovar je starý přes 500 let a kdysi ho poháněl parní stroj, proto „parostrojní“. Od jara 2026 je tu nová výstava, jak pára celý pivovar roztáčela."
+        },
+        {
+          "stop_id": "trip2-poklicky",
+          "fact": "Pokličky jsou pískovcové skály. Tvrdší „čepička“ nahoře chrání měkčí kámen pod sebou, takže vznikne hřib, co vypadá jako poklička na hrnec."
         },
         {
           "stop_id": "trip2-hrad-kokorin",
-          "fact": "Placeholder: víš, že… fakt o hradu Kokořín."
+          "fact": "Gotický hrad ze 14. století. Dlouho byl polorozpadlý a romantici 19. století si o něm vymýšleli pověsti o loupežnících."
+        },
+        {
+          "stop_id": "trip2-muzeum-eduarda-storcha-lobec",
+          "fact": "V Lobči je muzeum Eduarda Štorcha, který napsal Lovce mamutů. Trávil tady volný čas i penzi a v okolí nasbíral tisíce pravěkých pazourků."
         }
       ]
     },
@@ -105,35 +133,45 @@
       "znacene_trasy": "Cyklotrasy 0020, 0023, 0025",
       "zkracena": "Bez výjezdu na hvězdárnu: Strančice → Mnichovice → Hrusice (Ladova ves; památník do odvolání zavřen) → Senohraby, výrazně méně stoupání.",
       "mission_number": 3,
-      "mission_title": "Mise 3: Cesta ke hvězdám",
-      "mission_subtitle": "Placeholder: podtitulek mise, dodá se s obsahem.",
-      "xp_value": 150,
+      "mission_title": "Mise 03: Lov hvězd",
+      "mission_subtitle": "Vyšlápni si k největšímu oku Česka.",
+      "xp_value": 200,
       "scavenger": [
         {
           "id": "s1",
-          "text": "Placeholder: vyfoť kopuli dalekohledu",
-          "icon": "📷"
+          "text": "Kopule hvězdárny",
+          "icon": "🔭"
         },
         {
           "id": "s2",
-          "text": "Placeholder: vyfoť kocoura Mikeše v Hrusicích",
-          "icon": "📷"
+          "text": "Kočka (poklona Mikešovi z Hrusic), jakákoli se počítá",
+          "icon": "🐈"
         },
         {
           "id": "s3",
-          "text": "Placeholder: vyfoť výhled ze stoupání",
+          "text": "Něco úplně žlutého",
+          "icon": "🟡"
+        },
+        {
+          "id": "s4",
+          "text": "Dalekohled, anténa nebo něco, co kouká do nebe",
+          "icon": "📡"
+        },
+        {
+          "id": "s5",
+          "text": "Táta u cíle, celý zničený po výšlapu",
           "icon": "📷"
         }
       ],
-      "rabbit_hint": "Placeholder: vyfoť králíka u hvězdárny (dodá se s obsahem).",
+      "rabbit_hint": "Vyfoť králíka u kopule hvězdárny, jak se dívá do vesmíru.",
       "facts": [
         {
           "stop_id": "trip3-hvezdarna-ondrejov",
-          "fact": "Placeholder: víš, že… fakt o hvězdárně Ondřejov."
+          "fact": "Je tu největší dalekohled v Česku, jeho zrcadlo měří 2 metry. Secesní kopuli navrhl architekt Josef Fanta, ten samý, co postavil pražské Hlavní nádraží."
         },
         {
           "stop_id": "trip3-hrusice-pamatnik-josefa-lady",
-          "fact": "Placeholder: víš, že… fakt o Josefu Ladovi."
+          "fact": "V Hrusicích se narodil malíř Josef Lada. A odtud pochází i kocour Mikeš, který uměl mluvit. (Památník Lady je teď zavřený kvůli opravě, takže vsí jen projedeme.)"
         }
       ]
     }

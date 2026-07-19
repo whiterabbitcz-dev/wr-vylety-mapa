@@ -121,7 +121,9 @@ vygenerování — nic nespadne.
 Obsah hry je v JSON — výměna placeholderů = editace dvou souborů, žádný kód:
 
 - **`data/trips.json`** per mise: `mission_number`, `mission_title`,
-  `mission_subtitle`, `xp_value` (bonus za dokončení mise),
+  `mission_subtitle`, `xp_value` (bonus za dokončení mise; mise s variantami
+  může mít druhou hodnotu ve `varianta_alt.xp_value`, přizná se podle varianty
+  aktivní při dokončení a uloží do snapshotu),
   `scavenger: [{id, text, icon}]` (foto-hledačka, 3–5 položek, +10 XP/kus),
   `rabbit_hint` (stálý úkol „vyfoť králíka", +25 XP),
   `facts: [{stop_id, fact}]` („víš, že…" u zastávek; `stop_id` viz `id`
@@ -130,7 +132,8 @@ Obsah hry je v JSON — výměna placeholderů = editace dvou souborů, žádný
   (ikonka „super místo na fotku").
 - **`data/badges.json`**: `badges: [{id, name, description, icon, condition}]`;
   `condition` je `{type: "auto", metric, gte}` s metrikami `missions_done`,
-  `km_total`, `climb_total`, `xp` (ratchet, odemčené nezhasíná), nebo
+  `km_total`, `climb_total`, `xp`, `rabbits_done` (počet misí s vyfoceným
+  králíkem; vše ratchet, odemčené nezhasíná), nebo
   `{type: "manual"}` (self-check ťuknutím v polici odznaků).
 
 Postup hráčky žije v localStorage (`wr-vylety-mapa.progress`,

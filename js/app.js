@@ -320,13 +320,24 @@
     return progress.checks[tripId];
   }
 
+  // Bonus mise podle aktivní varianty (Mise 02: zkrácená 150 / plná 300).
+  // Self-reported jako všechno ostatní: platí varianta zapnutá ve chvíli
+  // dokončení mise a uloží se do snapshotu, aby se zpětně neměnila.
+  function missionXpValue(trip) {
+    if (state.variantAlt && trip.varianta_alt && trip.varianta_alt.xp_value != null) {
+      return trip.varianta_alt.xp_value;
+    }
+    return trip.xp_value || 0;
+  }
+
   function computeXp() {
     var xp = 0;
     state.trips.forEach(function (trip) {
       var checks = progress.checks[trip.id] || {};
       (trip.scavenger || []).forEach(function (it) { if (checks[it.id]) xp += XP_SCAVENGER; });
       if (checks.rabbit) xp += XP_RABBIT;
-      if (progress.missions[trip.id] && progress.missions[trip.id].done) xp += trip.xp_value || 0;
+      var m = progress.missions[trip.id];
+      if (m && m.done) xp += m.xp != null ? m.xp : trip.xp_value || 0;
     });
     return xp;
   }
@@ -346,7 +357,7 @@
       if (isMissionComplete(trip)) {
         if (!m || !m.done) {
           var stats = state.lastStats[trip.id] || { km: 0, gain: 0 };
-          progress.missions[trip.id] = { done: true, km: stats.km, gain: stats.gain };
+          progress.missions[trip.id] = { done: true, km: stats.km, gain: stats.gain, xp: missionXpValue(trip) };
         }
       } else if (m && m.done) {
         delete progress.missions[trip.id]; // odškrtla položku → mise zas otevřená
@@ -363,6 +374,11 @@
     if (metric === "km_total") return missions.reduce(function (a, k) { return a + (progress.missions[k].km || 0); }, 0);
     if (metric === "climb_total") return missions.reduce(function (a, k) { return a + (progress.missions[k].gain || 0); }, 0);
     if (metric === "xp") return computeXp();
+    if (metric === "rabbits_done") {
+      return state.trips.filter(function (t) {
+        return progress.checks[t.id] && progress.checks[t.id].rabbit;
+      }).length;
+    }
     return 0;
   }
 
@@ -558,11 +574,12 @@
     var checks = progress.checks[trip.id] || {};
     var done = (trip.scavenger || []).filter(function (it) { return checks[it.id]; }).length +
       (checks.rabbit ? 1 : 0);
-    var complete = progress.missions[trip.id] && progress.missions[trip.id].done;
+    var m = progress.missions[trip.id];
+    var complete = m && m.done;
     box.hidden = false;
     box.className = complete ? "complete" : "";
     box.innerHTML = complete
-      ? "Mise splněna ✓ bonus +" + (trip.xp_value || 0) + " XP"
+      ? "Mise splněna ✓ bonus +" + (m.xp != null ? m.xp : trip.xp_value || 0) + " XP"
       : "Úkoly mise: " + done + " / " + total;
   }
 

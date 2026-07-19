@@ -1,9 +1,9 @@
 {
   "badges": [
     {
-      "id": "prvni-mise",
-      "name": "První mise",
-      "description": "Placeholder: dokonči první misi.",
+      "id": "prvni-slapnuti",
+      "name": "První šlápnutí",
+      "description": "Dokonči první misi.",
       "icon": "🥇",
       "condition": {
         "type": "auto",
@@ -12,20 +12,9 @@
       }
     },
     {
-      "id": "sberatelka-misi",
-      "name": "Sběratelka misí",
-      "description": "Placeholder: dokonči všechny 3 mise.",
-      "icon": "🏆",
-      "condition": {
-        "type": "auto",
-        "metric": "missions_done",
-        "gte": 3
-      }
-    },
-    {
-      "id": "horska-koza",
-      "name": "Horská koza",
-      "description": "Placeholder: nastoupej celkem 500 m.",
+      "id": "horsky-kozel",
+      "name": "Horský kozel",
+      "description": "Nasbírej 500 m převýšení celkem.",
       "icon": "⛰️",
       "condition": {
         "type": "auto",
@@ -34,41 +23,68 @@
       }
     },
     {
-      "id": "stovka-v-nohach",
-      "name": "Stovka v nohách",
-      "description": "Placeholder: najeď celkem 50 km.",
-      "icon": "🚴",
+      "id": "tri-mise-tri-razitka",
+      "name": "Tři mise, tři razítka",
+      "description": "Dokonči všechny tři mise.",
+      "icon": "🏆",
       "condition": {
         "type": "auto",
-        "metric": "km_total",
-        "gte": 50
+        "metric": "missions_done",
+        "gte": 3
       }
     },
     {
-      "id": "lovkyne-xp",
-      "name": "Lovkyně XP",
-      "description": "Placeholder: nasbírej 300 XP.",
-      "icon": "⚡",
+      "id": "sberatel-kraliku",
+      "name": "Sběratel králíků",
+      "description": "Vyfoť králíka na všech třech misích.",
+      "icon": "🐇",
       "condition": {
         "type": "auto",
-        "metric": "xp",
-        "gte": 300
+        "metric": "rabbits_done",
+        "gte": 3
       }
     },
     {
-      "id": "destiva-jizda",
-      "name": "Deštivá jízda",
-      "description": "Placeholder: jela jsi kus trasy v dešti (odškrtni sama).",
+      "id": "prezivsi-deste",
+      "name": "Přeživší deště",
+      "description": "Jela jsem, i když pršelo.",
       "icon": "🌧️",
       "condition": {
         "type": "manual"
       }
     },
     {
-      "id": "zmrzlina-na-trase",
-      "name": "Zmrzlinová pauza",
-      "description": "Placeholder: dala sis na trase zmrzlinu (odškrtni sama).",
+      "id": "zmrzlinova-kralovna",
+      "name": "Zmrzlinová královna",
+      "description": "Dala jsem si cestou zmrzlinu.",
       "icon": "🍦",
+      "condition": {
+        "type": "manual"
+      }
+    },
+    {
+      "id": "navigatorka",
+      "name": "Navigátorka",
+      "description": "Dovedla jsem nás do cíle v navigátor režimu.",
+      "icon": "🧭",
+      "condition": {
+        "type": "manual"
+      }
+    },
+    {
+      "id": "pichacka",
+      "name": "Píchačka",
+      "description": "Přežila jsem první píchlou duši.",
+      "icon": "🔧",
+      "condition": {
+        "type": "manual"
+      }
+    },
+    {
+      "id": "bez-fnukani",
+      "name": "Bez fňukání",
+      "description": "Celá mise beze slova „kdy už tam budeme“.",
+      "icon": "🤐",
       "condition": {
         "type": "manual"
       }
